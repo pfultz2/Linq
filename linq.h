@@ -50,8 +50,16 @@
 //
 #define LINQ_HEAD(x) LINQ_PICK_HEAD(LINQ_MARK x)
 #define LINQ_MARK(...) (__VA_ARGS__), 
-#define LINQ_PICK_HEAD_I(x, ...) x
 #define LINQ_PICK_HEAD(...) LINQ_PICK_HEAD_I(__VA_ARGS__,)
+#ifndef _MSC_VER
+#define LINQ_PICK_HEAD_I(x, ...) x
+#else
+// MSVC workarounds
+#define LINQ_PICK_HEAD_III(x, ...) x
+#define LINQ_PICK_HEAD_II(x) LINQ_PICK_HEAD_III x
+#define LINQ_PICK_HEAD_I(...) LINQ_PICK_HEAD_II((__VA_ARGS__))
+#endif
+
 
 //
 // LINQ_TAIL retrieves the tail of a sequence.
@@ -60,7 +68,7 @@
 //     LINQ_TAIL((1)(2)(3)) // Expands to (2)(3)
 //
 #define LINQ_TAIL(x) LINQ_EAT x
-//Various utilities
+// Various utilities
 #define LINQ_EAT(...)
 #define LINQ_REM(...) __VA_ARGS__
 #define LINQ_EXPAND(...) __VA_ARGS__
