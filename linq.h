@@ -1,4 +1,3 @@
-
 #ifndef INCLUDE_GUARD_LINQ_H
 #define INCLUDE_GUARD_LINQ_H
 
@@ -107,7 +106,13 @@
 //
 #define LINQ_PLACE(x) LINQ_EXPAND(LINQ_REM LINQ_PICK_HEAD(LINQ_MARK x))
 
-namespace linq { namespace detail {
+namespace linq { 
+
+//MSVC 2010 doesn't provide declval
+template <typename T>
+typename std::add_rvalue_reference<T>::type declval(); // no definition required
+
+namespace detail {
 
 //This is used to workaround a bug in boost 1.49
 template<class Fun>
@@ -125,7 +130,7 @@ struct transformer
     template<class F, class T>
     struct result<F(T)>
     {
-        typedef decltype(std::declval<Fun>()(std::declval<T>())) type;
+        typedef decltype(linq::declval<Fun>()(linq::declval<T>())) type;
     };
 
     template<class T>
