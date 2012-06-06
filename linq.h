@@ -3,6 +3,7 @@
 #ifndef INCLUDE_GUARD_LINQ_H
 #define INCLUDE_GUARD_LINQ_H
 
+#include <utility>
 #include <boost/preprocessor.hpp>
 #include <boost/preprocessor/facilities/is_empty.hpp>
 #include <boost/range/adaptor/filtered.hpp>
@@ -50,6 +51,38 @@
 
 namespace linq { namespace detail {
 
+
+template<class Fun>
+struct transformer
+{
+    Fun f;
+
+    transformer(Fun f): f(f)
+    {}
+
+    template<class F>
+    struct result
+    {};
+
+    template<class F, class T>
+    struct result<F(T)>
+    {
+        typedef decltype(std::declval<Fun>()(std::declval<T>())) type;
+    };
+
+    template<class T>
+    auto operator()(T && x) const LINQ_RETURNS(f(std::forward<T>(x)))
+
+    template<class T>
+    auto operator()(T && x) LINQ_RETURNS(f(std::forward<T>(x)))
+};
+
+template<class F>
+transformer<F> make_transformer(F f)
+{
+    return transformer<F>(f);
+}
+
 struct where_t
 {
     template<class Pred>
@@ -59,7 +92,7 @@ struct where_t
 struct select_t
 {
     template<class Tran>
-    auto operator+(Tran t) LINQ_RETURNS(boost::adaptors::transformed(t))
+    auto operator+(Tran t) LINQ_RETURNS(boost::adaptors::transformed(make_transformer(t)))
 };
 }
 
