@@ -1,5 +1,4 @@
 
-
 #ifndef INCLUDE_GUARD_LINQ_H
 #define INCLUDE_GUARD_LINQ_H
 
