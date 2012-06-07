@@ -32,7 +32,7 @@ However, this is can be very hard to read, and is filled with a lot of boilerpla
 auto r = LINQ(from(x, numbers) where(x > 2) select(x * x));
 ```
 
-This will dedcue the type of the `numbers` range, and reuse that for all the lambdas. (This is why its important to put select at the end)
+This will deduce the type of the `numbers` range, and reuse that for all the lambdas. (This is why its important to put select at the end)
 
 Usage
 -----
@@ -41,7 +41,7 @@ To use Linq, just include the "linq.h" file. Then all you linq queries must be p
 
 
 ### from
-All linq queries must start with a from statement. This specifies the variable name to be used for the lambdas and the container that the quieries will be applied to. 
+All linq queries must start with a `from` statement. This specifies the variable name to be used for the lambdas and the container that the quieries will be applied to. 
 
 ```c#
 LINQ(from(variable, container) ... );
