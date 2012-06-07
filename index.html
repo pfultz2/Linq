@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Linq by pfultz2</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Linq</h1>
+        <p>Linq and list comprehension for C++</p>
+        <p class="view"><a href="https://github.com/pfultz2/Linq">View the Project on GitHub <small>pfultz2/Linq</small></a></p>
+        <ul>
+          <li><a href="https://github.com/pfultz2/Linq/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/pfultz2/Linq/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/pfultz2/Linq">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>Linq</h1>
+
+<p>Linq and list comprehension for C++:</p>
+
+<div class="highlight">
+<pre><span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="n">numbers</span> <span class="p">=</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span> <span class="p">};</span>
+<span class="n">auto</span> <span class="n">r</span> <span class="p">=</span> <span class="n">LINQ</span><span class="p">(</span><span class="k">from</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">numbers</span><span class="p">)</span> <span class="k">where</span><span class="p">(</span><span class="n">x</span> <span class="p">&gt;</span> <span class="m">2</span><span class="p">)</span> <span class="k">select</span><span class="p">(</span><span class="n">x</span> <span class="p">*</span> <span class="n">x</span><span class="p">));</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">auto</span> <span class="n">x</span> <span class="p">:</span> <span class="n">r</span><span class="p">)</span> <span class="n">printf</span><span class="p">(</span><span class="s">"%i\n"</span><span class="p">,</span> <span class="n">x</span><span class="p">);</span>
+</pre>
+</div>
+
+
+<p>The C++ code above will outputs this(yes that is C++ code above):</p>
+
+<pre><code>9
+16
+</code></pre>
+
+<h2>Motivation</h2>
+
+<p>List comprehension can already be done using Boost.Range and lambda, like this:</p>
+
+<div class="highlight">
+<pre><span class="n">auto</span> <span class="n">r</span> <span class="p">=</span> <span class="n">numbers</span> 
+        <span class="p">|</span> <span class="n">boost</span><span class="p">::</span><span class="n">adaptors</span><span class="p">::</span><span class="n">filtered</span><span class="p">([](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="p">&gt;</span> <span class="m">2</span><span class="p">;</span> <span class="p">})</span> 
+        <span class="p">|</span> <span class="n">boost</span><span class="p">::</span><span class="n">adaptors</span><span class="p">::</span><span class="n">transformed</span><span class="p">([](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="p">*</span> <span class="n">x</span><span class="p">;</span> <span class="p">});</span>
+</pre>
+</div>
+
+
+<p>However, this is can be very hard to read, and is filled with a lot of boilerplate lambda code. Also, if the type of the container is much longer or more complex it can get even harder to read. Linq provides syntatic surger to make the statement shorter and more concise:</p>
+
+<div class="highlight">
+<pre><span class="n">auto</span> <span class="n">r</span> <span class="p">=</span> <span class="n">LINQ</span><span class="p">(</span><span class="k">from</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">numbers</span><span class="p">)</span> <span class="k">where</span><span class="p">(</span><span class="n">x</span> <span class="p">&gt;</span> <span class="m">2</span><span class="p">)</span> <span class="k">select</span><span class="p">(</span><span class="n">x</span> <span class="p">*</span> <span class="n">x</span><span class="p">));</span>
+</pre>
+</div>
+
+
+<p>This will deduce the type of the <code>numbers</code> range, and reuse that for all the lambdas. (This is why its important to put select at the end)</p>
+
+<h2>Usage</h2>
+
+<p>To use Linq, just include the "linq.h" file. Then all you linq queries must be placed inside the <code>LINQ()</code> macro. The result of the linq query is a range of elements that match the query. All queries are lazy evaluated. Since there is no copy of the range, the query cannot outlive the range.</p>
+
+<h3>from</h3>
+
+<p>All linq queries must start with a <code>from</code> statement. This specifies the variable name to be used for the lambdas and the container that the quieries will be applied to. </p>
+
+<div class="highlight">
+<pre><span class="n">LINQ</span><span class="p">(</span><span class="k">from</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">container</span><span class="p">)</span> <span class="p">...</span> <span class="p">);</span>
+</pre>
+</div>
+
+
+<h3>where</h3>
+
+<p>The where clause returns the element that matches the predicate. It is optional but must come after a <code>from</code> clause and should be before a <code>select</code> clause if there is one.</p>
+
+<div class="highlight">
+<pre><span class="n">LINQ</span><span class="p">(</span><span class="k">from</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">container</span><span class="p">)</span> <span class="k">where</span><span class="p">(</span><span class="n">predicate</span><span class="p">)</span> <span class="p">...</span> <span class="p">);</span>
+</pre>
+</div>
+
+
+<h3>select</h3>
+
+<p>The select clause applies a tranformation to the elements. It is optional also, but should be the very last clause.</p>
+
+<div class="highlight">
+<pre><span class="n">LINQ</span><span class="p">(</span> <span class="p">...</span> <span class="k">select</span><span class="p">(</span><span class="n">transformation</span><span class="p">)</span> <span class="p">);</span>
+</pre>
+</div>
+
+
+<h2>Requirements</h2>
+
+<p>This will work on MSVC 2010 or later, clang, and gcc. The compiler needs to be set to C++11 mode, because it requires lambda support. It also requires boost. It was tested with boost 1.49, but may work on earlier versions. </p>
+
+<h2>Limitations</h2>
+
+<p>As of now, it doesn't support cartesian products. I hope to add that in the future(any help on developing a cartesian product iterator would be helpful). So you cannot write this:</p>
+
+<div class="highlight">
+<pre><span class="c1">//This is not supported yet</span>
+<span class="n">LINQ</span><span class="p">(</span><span class="k">from</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">list1</span><span class="p">)</span> <span class="k">from</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">list2</span><span class="p">)</span> <span class="k">select</span><span class="p">(</span><span class="n">x</span><span class="p">*</span><span class="n">y</span><span class="p">));</span>
+</pre>
+</div>
+
+
+<p>Also, the <code>sortedby</code> clause is not suported yet.</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/pfultz2">pfultz2</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+    
+  </body>
+</html>
