@@ -112,6 +112,90 @@ namespace linq {
 template <typename T>
 typename std::add_rvalue_reference<T>::type declval(); // no definition required
 
+// bind_iterator
+template<class OuterIterator, class Selector, class SelectorRange = typename boost::result_of<Selector(typename boost::iterator_reference<OuterIterator>::type)>::type>
+struct bind_iterator
+: boost::iterator_facade
+<
+    bind_iterator<OuterIterator, Selector, SelectorRange>, 
+    typename boost::range_value<SelectorRange >::type,
+    boost::forward_traversal_tag,
+    typename boost::range_reference<SelectorRange >::type
+>
+{
+    typedef typename boost::range_iterator<SelectorRange >::type InnerIteraror;
+
+    Selector selector;
+    OuterIterator iterator;
+    InnerIteraror inner_first;
+    InnerIteraror inner_last;
+    SelectorRange r;
+
+    bind_iterator(Selector selector, OuterIterator iterator) : selector(selector), iterator(iterator)
+    {
+    }
+
+    void increment()
+    {
+        if (inner_last == inner_first)
+        {
+            r = selector(*iterator);
+            inner_first = boost::begin(r);
+            inner_last = boost::end(r);
+            iterator++;
+        }
+        else
+        {
+            inner_first++;
+        }
+    }
+
+    bool equal(const bind_iterator& other) const
+    {
+        return this->iterator == other.iterator;
+    }
+
+    typename boost::range_reference<SelectorRange >::type dereference() const
+    {
+        return *inner_first;
+    }
+
+};
+
+template<class Iterator, class Selector>
+bind_iterator<Iterator, Selector> make_bind_iterator(Selector selector, OuterIterator iterator)
+{
+    return bind_iterator<Iterator, Selector>(selector, iterator);
+}
+
+// Bound range adaptor
+namespace detail {
+template<class Selector>
+struct bound_t
+{
+    Selector s;
+    bound_t(Selector s) : s(s)
+    {
+    }
+
+    template<class Range>
+    friend auto operator|(Range && r, bound_t self) LINQ_RETURNS
+    (
+        boost::make_iterator_range
+        (
+            make_bind_iterator(self.s, boost::begin(r)),
+            make_bind_iterator(self.s, boost::end(r))
+        )
+    )
+};
+}
+
+template<class Selector>
+detail::bound_t<Selector> bound(Selector s)
+{
+    return detail::bound_t<Selector>(s);
+}
+
 namespace detail {
 
 //This is used to workaround a bug in boost 1.49
@@ -159,10 +243,18 @@ struct select_t
     template<class Tran>
     auto operator+(Tran t) LINQ_RETURNS(boost::adaptors::transformed(make_transformer(t)))
 };
+
+struct select_many_t
+{
+    template<class Sel>
+    auto operator+(Sel s) LINQ_RETURNS(linq::bound(s))
+};
 }
 
+detail::select_many_t select_many = {};
 detail::select_t select = {};
 detail::where_t where = {};
+
 }
 
 // Helps in defining lambdas in two steps. It also dedcues the type held
@@ -180,6 +272,7 @@ detail::where_t where = {};
 //
 #define LINQ_WHERE(var, col) linq::where + LINQ_LAMBDA_HEADER(var, col) LINQ_LAMBDA_BLOCK
 #define LINQ_SELECT(var, col) linq::select + LINQ_LAMBDA_HEADER(var, col) LINQ_LAMBDA_BLOCK
+#define LINQ_SELECT_MANY(var, col) linq::select_many + LINQ_LAMBDA_HEADER(var, col) LINQ_LAMBDA_BLOCK
 
 //
 // Keywords used by linq
