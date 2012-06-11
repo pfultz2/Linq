@@ -4,6 +4,7 @@
 #include <utility>
 #include <boost/preprocessor.hpp>
 #include <boost/preprocessor/facilities/is_empty.hpp>
+#include <boost/range.hpp> 
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
@@ -12,7 +13,11 @@
 // Some preprocessor utilites
 //
 //
-#define LINQ_RETURNS(...) -> decltype(__VA_ARGS__) { return __VA_ARGS__; }
+
+//
+// LINQ_RETURNS for auto return type deduction.
+//
+#define LINQ_RETURNS(...) -> decltype(__VA_ARGS__) { return (__VA_ARGS__); }
 
 //
 // LINQ_IS_PAREN is used to detect if the first token is a parenthesis.
@@ -106,6 +111,36 @@
 //
 #define LINQ_PLACE(x) LINQ_EXPAND(LINQ_REM LINQ_PICK_HEAD(LINQ_MARK x))
 
+//
+// LINQ_TO_SEQ converts the keywords into a preprocessor sequence
+// 
+#define LINQ_TO_SEQ(x) LINQ_TO_SEQ_WHILE_M \
+( \
+    BOOST_PP_WHILE(LINQ_WHILE_P, LINQ_WHILE_O, (,x)) \
+)
+
+#define LINQ_TO_SEQ_P(prev, tail) BOOST_PP_NOT(LINQ_IS_EMPTY(tail))
+#define LINQ_TO_SEQ_O(prev, tail) \
+    BOOST_PP_IF(LINQ_IS_PAREN(tail), \
+        LINQ_TO_SEQ_PAREN, \
+        LINQ_TO_SEQ_KEYWORD \
+        )(prev, tail)
+#define LINQ_TO_SEQ_PAREN(prev, tail) \
+    (prev (LINQ_HEAD(tail)), LINQ_TAIL(tail))
+
+#define LINQ_TO_SEQ_KEYWORD(prev, tail) \
+    LINQ_TO_SEQ_REPLACE(prev, LINQ_KEYWORD(tail))
+
+#define LINQ_TO_SEQ_REPLACE(prev, tail) \
+    (prev LINQ_HEAD(tail), LINQ_TAIL(tail))
+
+#define LINQ_TO_SEQ_M(prev, tail) prev
+
+#define LINQ_TO_SEQ_WHILE_P(r, state) LINQ_TO_SEQ_P state
+#define LINQ_TO_SEQ_WHILE_O(r, state) LINQ_TO_SEQ_O state
+#define LINQ_TO_SEQ_WHILE_M(state) LINQ_TO_SEQ_M state
+
+
 namespace linq { 
 
 //MSVC 2010 doesn't provide declval
@@ -163,7 +198,7 @@ struct bind_iterator
 };
 
 template<class Iterator, class Selector>
-bind_iterator<Iterator, Selector> make_bind_iterator(Selector selector, OuterIterator iterator)
+bind_iterator<Iterator, Selector> make_bind_iterator(Selector selector, Iterator iterator)
 {
     return bind_iterator<Iterator, Selector>(selector, iterator);
 }
