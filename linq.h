@@ -340,7 +340,13 @@ detail::where_t where = {};
 #define LINQ_X(...) __VA_ARGS__
 
 #define LINQ_PROCESS_PAREN(data, x) x
+#ifndef _MSC_VER
 #define LINQ_PROCESS_KEYWORD(data, x) | x data
+#else
+// MSVC Workarounds
+#define LINQ_PROCESS_KEYWORD_RES(x) x
+#define LINQ_PROCESS_KEYWORD(data, x) | LINQ_PROCESS_KEYWORD_RES(x data)
+#endif
 
 // Process the select, where clauses
 #define LINQ_COL(var, col) col
