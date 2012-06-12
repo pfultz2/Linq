@@ -116,8 +116,12 @@
 // 
 #define LINQ_TO_SEQ(x) LINQ_TO_SEQ_WHILE_M \
 ( \
-    BOOST_PP_WHILE(LINQ_WHILE_P, LINQ_WHILE_O, (,x)) \
+    BOOST_PP_WHILE(LINQ_TO_SEQ_WHILE_P, LINQ_TO_SEQ_WHILE_O, (,x)) \
 )
+
+#define LINQ_TO_SEQ_WHILE_P(r, state) LINQ_TO_SEQ_P state
+#define LINQ_TO_SEQ_WHILE_O(r, state) LINQ_TO_SEQ_O state
+#define LINQ_TO_SEQ_WHILE_M(state) LINQ_TO_SEQ_M state
 
 #define LINQ_TO_SEQ_P(prev, tail) BOOST_PP_NOT(LINQ_IS_EMPTY(tail))
 #define LINQ_TO_SEQ_O(prev, tail) \
@@ -136,9 +140,14 @@
 
 #define LINQ_TO_SEQ_M(prev, tail) prev
 
-#define LINQ_TO_SEQ_WHILE_P(r, state) LINQ_TO_SEQ_P state
-#define LINQ_TO_SEQ_WHILE_O(r, state) LINQ_TO_SEQ_O state
-#define LINQ_TO_SEQ_WHILE_M(state) LINQ_TO_SEQ_M state
+
+//
+// LINQ_SEQ_OUT outputs the sequence
+//
+#define LINQ_SEQ_OUT(seq) BOOST_PP_SEQ_FOR_EACH(LINQ_SEQ_OUT_EACH, ~, seq) 
+#define LINQ_SEQ_OUT_EACH(r, data, x) x
+
+// TODO: LINQ_SEQ_TRANSFORM_W
 
 
 namespace linq { 
@@ -317,52 +326,22 @@ detail::where_t where = {};
 #define LINQ_KEYWORD_where (LINQ_WHERE)
 
 //
-// LINQ_PROCESS will process a tuple as it parses the linq syntax. The
-// tuple has four parameters:
-// 
-// var: is name a the variable passed in from the from clause
-// coi : is the container passed in from the from clause
-// prev: is the previously parsed linq query
-// tail: is whats left, that needs to be parsed
+// Process the sequence
 //
-#define LINQ_PROCESS(var, col, prev, tail) \
-BOOST_PP_IF(LINQ_IS_PAREN(tail), LINQ_PROCESS_PAREN, LINQ_PROCESS_KEYWORD)(var, col, prev, tail)
 
-#define LINQ_PROCESS_PAREN(var, col, prev, tail) \
-(var, col, prev LINQ_HEAD(tail), LINQ_TAIL(tail))
+// Expands the parameter, for another preprocessor scan
+#define LINQ_X(...) __VA_ARGS__
 
-#define LINQ_PROCESS_KEYWORD(var, col, prev, tail) \
-LINQ_PROCESS_REPLACE(var, col, prev, LINQ_KEYWORD(tail))
+#define LINQ_PROCESS_PAREN(data, x) x
+#define LINQ_PROCESS_KEYWORD(data, x) | x data
 
-#define LINQ_PROCESS_REPLACE(var, col, prev, tail) \
-(var, col, prev | LINQ_PLACE(tail)(var, col), LINQ_TAIL(tail))
-
-// Predicate is used to determine if more needs to be parsed
-#define LINQ_PREDICATE(var, col, prev, tail) BOOST_PP_NOT(LINQ_IS_EMPTY(tail))
-// The final parsed output is the prev parameter
-#define LINQ_OUT(var, col, prev, tail) prev
-
-//
-// While statement macros
-//
-#define LINQ_WHILE_X(...) __VA_ARGS__
-#define LINQ_WHILE_P(r, state) LINQ_WHILE_X(LINQ_PREDICATE state)
-#define LINQ_WHILE_O(r, state) LINQ_WHILE_X(LINQ_PROCESS state)
-#define LINQ_WHILE_M(state) LINQ_WHILE_X(LINQ_OUT state)
-#define LINQ_WHILE(var, col, tail) \
-LINQ_WHILE_M(BOOST_PP_WHILE(LINQ_WHILE_P, LINQ_WHILE_O, (var, col, col, tail)))
-
-// These retrieve the variable and container from the from clause, and
-// start the while loop
-#define LINQ_VAR(var, col) var
+// Process the select, where clauses
 #define LINQ_COL(var, col) col
-#define LINQ_FROM(from, tail) LINQ_WHILE(LINQ_VAR from, LINQ_COL from, tail)
-#define LINQ_X(tail) LINQ_FROM(LINQ_HEAD(tail), LINQ_TAIL(tail))
-
-// And finally the actual LINQ macro
-#define LINQ(x) LINQ_X(LINQ_TAIL(LINQ_KEYWORD(x)))
-
-
-
+#define LINQ_SELECT_WHERE(data, seq) LINQ_COL data LINQ_SEQ_OUT(BOOST_PP_SEQ_TRANSFORM(LINQ_SELECT_WHERE_O, data, seq))
+#define LINQ_SELECT_WHERE_O(s, data, x) BOOST_PP_IF(LINQ_IS_PAREN(x), LINQ_PROCESS_PAREN, LINQ_PROCESS_KEYWORD)(data, x)
+// Transforms the sequence
+#define LINQ_TRANSFORM(seq) LINQ_X(LINQ_SELECT_WHERE(BOOST_PP_SEQ_ELEM(1, seq) ,BOOST_PP_SEQ_REST_N(2, seq)))
+// And finally the LINQ macro
+#define LINQ(x) LINQ_TRANSFORM(LINQ_TO_SEQ(x))
 
 #endif
