@@ -149,15 +149,33 @@
 
 
 //
-// LINQ_SEQ_OUT outputs the sequence
+// LINQ_TO_STRING convert a sequence back to a string of tokens
 //
-#define LINQ_SEQ_OUT(seq) BOOST_PP_SEQ_FOR_EACH(LINQ_SEQ_OUT_EACH, ~, seq) 
-#define LINQ_SEQ_OUT_EACH(r, data, x) x
+#define LINQ_TO_STRING(seq) BOOST_PP_SEQ_FOR_EACH(LINQ_TO_STRING_EACH, ~, seq) 
+#define LINQ_TO_STRING_EACH(r, data, x) x
 
+//
+// LINQ_SPLIT
+//
+#define LINQ_SPLIT(seq, pred, data) BOOST_PP_SEQ_FOLD_LEFT(LINQ_SPLIT_FOLD_LEFT_O, (pred, data,,,), seq)
+#define LINQ_SPLIT_FOLD_LEFT_O(s, state, x) LINQ_SPLIT_FOLD_LEFT_INVOKE((s, x, LINQ_REM state))
+#define LINQ_SPLIT_FOLD_LEFT_INVOKE(x) LINQ_SPLIT_OP x
+#define LINQ_SPLIT_OP(s, x, pred, data, seq, elem) BOOST_PP_IF(pred(s, data, x), LINQ_SPLIT_OP_TRUE, LINQ_SPLIT_OP_FALSE)(x, pred, data, seq, elem)
+#define LINQ_SPLIT_OP_TRUE(x, pred, data, seq, elem) BOOST_PP_IIF(LINQ_IS_PAREN(elem), \
+    (pred, data, seq(elem),),\
+    (pred, data, seq,))
+#define LINQ_SPLIT_OP_FALSE(x, pred, data, seq, elem) (pred, data, seq, elem (x))
+
+// 
 // LINQ_SEQ_NEST
-
-#define LINQ_SEQ_NEST(seq) BOOST_PP_SEQ_FOLD_RIGHT(LINQ_SEQ_NEST_OP, BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), seq) , BOOST_PP_SEQ_POP_BACK(seq)) 
+// 
+#define LINQ_SEQ_NEST(seq) BOOST_PP_SEQ_FOLD_LEFT(LINQ_SEQ_NEST_OP, BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), seq) , BOOST_PP_SEQ_POP_BACK(seq)) 
 #define LINQ_SEQ_NEST_OP(s, state, x) x(state)
+
+// 
+// LINQ_SEQ_NEST_REVERSE
+// 
+#define LINQ_SEQ_NEST_REVERSE(seq) BOOST_PP_SEQ_FOLD_RIGHT(LINQ_SEQ_NEST_OP, BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), seq) , BOOST_PP_SEQ_POP_BACK(seq)) 
 
 // TODO: LINQ_SEQ_TRANSFORM_W
 
@@ -353,9 +371,18 @@ detail::where_t where = {};
 #define LINQ_PROCESS_KEYWORD(data, x) | LINQ_PROCESS_KEYWORD_RES(x data)
 #endif
 
+// Process from clauses
+#define LINQ_FROM(seq) 
+
+#define LINQ_FROM_P(r, data, x) LINQ_IS_EMPTY(x)
+#define LINQ_FROM_OP(r, seq, x) 
+#define LINQ_FROM_PAREN(seq, x)
+#define LINQ_FROM_KEYWORD(seq, x)
+
+
 // Process the select, where clauses
 #define LINQ_COL(var, col) col
-#define LINQ_SELECT_WHERE(data, seq) LINQ_COL data LINQ_SEQ_OUT(BOOST_PP_SEQ_TRANSFORM(LINQ_SELECT_WHERE_O, data, seq))
+#define LINQ_SELECT_WHERE(data, seq) LINQ_COL data LINQ_TO_STRING(BOOST_PP_SEQ_TRANSFORM(LINQ_SELECT_WHERE_O, data, seq))
 #define LINQ_SELECT_WHERE_O(s, data, x) BOOST_PP_IF(LINQ_IS_PAREN(x), LINQ_PROCESS_PAREN, LINQ_PROCESS_KEYWORD)(data, x)
 // Transforms the sequence
 #define LINQ_TRANSFORM(seq) LINQ_X(LINQ_SELECT_WHERE(BOOST_PP_SEQ_ELEM(1, seq) ,BOOST_PP_SEQ_REST_N(2, seq)))
