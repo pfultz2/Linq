@@ -37,11 +37,11 @@ This will deduce the type of the `numbers` range, and reuse that for all the lam
 Usage
 -----
 
-To use Linq, just include the "linq.h" file. Then all you linq queries must be placed inside the `LINQ()` macro. The result of the linq query is a range of elements that match the query. All queries are lazy evaluated. Since there is no copy of the range, the query cannot outlive the range.
+To use Linq, just include the "linq.h" file. Then all your linq queries must be placed inside the `LINQ()` macro. The result of the linq query is a range of elements that match the query. All queries are lazily evaluated. Since there is no copy of the range, the query cannot outlive the range.
 
 
 ### from
-All linq queries must start with a `from` statement. This specifies the variable name to be used for the lambdas and the container that the quieries will be applied to. 
+All linq queries must start with a `from` statement. This specifies the variable name to be used for the lambdas and the container that the queries will be applied to. 
 
 ```c#
 LINQ(from(variable, container) ... );
@@ -69,7 +69,7 @@ This will work on MSVC 2010 or later, clang, and gcc. The compiler needs to be s
 Limitations
 -----------
 
-As of now, it doesn't support cartesian products. I hope to add that in the future(any help on developing a cartesian product iterator would be helpful). So you cannot write this:
+As of now, it doesn't support cartesian products. I hope to add that in the future (any help on developing a cartesian product iterator would be helpful). So you cannot write this:
 
 ```c#
 //This is not supported yet
