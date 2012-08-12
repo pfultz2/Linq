@@ -84,6 +84,11 @@
 #define LINQ_EXPAND(...) __VA_ARGS__
 
 //
+// LINQ_BACK gets the last element of a sequence
+//
+#define LINQ_BACK(seq) BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), seq)
+
+//
 // LINQ_KEYWORD transforms the keyword. Keywords are generally defined
 // like this:
 //
@@ -149,33 +154,35 @@
 
 
 //
-// LINQ_TO_STRING convert a sequence back to a string of tokens
+// LINQ_SEQ_TO_STRING convert a sequence back to a string of tokens
 //
-#define LINQ_TO_STRING(seq) BOOST_PP_SEQ_FOR_EACH(LINQ_TO_STRING_EACH, ~, seq) 
-#define LINQ_TO_STRING_EACH(r, data, x) x
+#define LINQ_SEQ_TO_STRING(seq) BOOST_PP_SEQ_FOR_EACH(LINQ_SEQ_TO_STRING_EACH, ~, seq) 
+#define LINQ_SEQ_TO_STRING_EACH(r, data, x) x
 
 //
-// LINQ_SPLIT
+// LINQ_SEQ_SPLIT
 //
-#define LINQ_SPLIT(seq, pred, data) BOOST_PP_SEQ_FOLD_LEFT(LINQ_SPLIT_FOLD_LEFT_O, (pred, data,,,), seq)
-#define LINQ_SPLIT_FOLD_LEFT_O(s, state, x) LINQ_SPLIT_FOLD_LEFT_INVOKE((s, x, LINQ_REM state))
-#define LINQ_SPLIT_FOLD_LEFT_INVOKE(x) LINQ_SPLIT_OP x
-#define LINQ_SPLIT_OP(s, x, pred, data, seq, elem) BOOST_PP_IF(pred(s, data, x), LINQ_SPLIT_OP_TRUE, LINQ_SPLIT_OP_FALSE)(x, pred, data, seq, elem)
-#define LINQ_SPLIT_OP_TRUE(x, pred, data, seq, elem) BOOST_PP_IIF(LINQ_IS_PAREN(elem), \
+#define LINQ_SEQ_SPLIT(seq, pred, data) LINQ_SEQ_SPLIT_FOLD_LEFT_M(BOOST_PP_SEQ_FOLD_LEFT(LINQ_SEQ_SPLIT_FOLD_LEFT_O, (pred, data,,), seq))
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_O(s, state, x) LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE((s, x, LINQ_REM state))
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE(x) LINQ_SEQ_SPLIT_OP x
+#define LINQ_SEQ_SPLIT_OP(s, x, pred, data, seq, elem) BOOST_PP_IF(pred(s, data, x), LINQ_SEQ_SPLIT_OP_TRUE, LINQ_SEQ_SPLIT_OP_FALSE)(x, pred, data, seq, elem)
+#define LINQ_SEQ_SPLIT_OP_TRUE(x, pred, data, seq, elem) BOOST_PP_IIF(LINQ_IS_PAREN(elem), \
     (pred, data, seq(elem),),\
-    (pred, data, seq,))
-#define LINQ_SPLIT_OP_FALSE(x, pred, data, seq, elem) (pred, data, seq, elem (x))
+    (pred, data, seq,) )
+#define LINQ_SEQ_SPLIT_OP_FALSE(x, pred, data, seq, elem) (pred, data, seq, elem (x))
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_M(x) LINQ_SEQ_SPLIT_M x
+#define LINQ_SEQ_SPLIT_M(pred, data, seq, elem) seq BOOST_PP_IIF(LINQ_IS_PAREN(elem), (elem),)
 
 // 
 // LINQ_SEQ_NEST
 // 
-#define LINQ_SEQ_NEST(seq) BOOST_PP_SEQ_FOLD_LEFT(LINQ_SEQ_NEST_OP, BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), seq) , BOOST_PP_SEQ_POP_BACK(seq)) 
+#define LINQ_SEQ_NEST(seq) BOOST_PP_SEQ_FOLD_LEFT(LINQ_SEQ_NEST_OP, LINQ_BACK(seq) , BOOST_PP_SEQ_POP_BACK(seq)) 
 #define LINQ_SEQ_NEST_OP(s, state, x) x(state)
 
 // 
 // LINQ_SEQ_NEST_REVERSE
 // 
-#define LINQ_SEQ_NEST_REVERSE(seq) BOOST_PP_SEQ_FOLD_RIGHT(LINQ_SEQ_NEST_OP, BOOST_PP_SEQ_ELEM(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), seq) , BOOST_PP_SEQ_POP_BACK(seq)) 
+#define LINQ_SEQ_NEST_REVERSE(seq) BOOST_PP_SEQ_FOLD_RIGHT(LINQ_SEQ_NEST_OP, LINQ_BACK(seq) , BOOST_PP_SEQ_POP_BACK(seq)) 
 
 // TODO: LINQ_SEQ_TRANSFORM_W
 
@@ -371,22 +378,34 @@ detail::where_t where = {};
 #define LINQ_PROCESS_KEYWORD(data, x) | LINQ_PROCESS_KEYWORD_RES(x data)
 #endif
 
-// Process from clauses
-#define LINQ_FROM(seq) 
-
-#define LINQ_FROM_P(r, data, x) LINQ_IS_EMPTY(x)
-#define LINQ_FROM_OP(r, seq, x) 
-#define LINQ_FROM_PAREN(seq, x)
-#define LINQ_FROM_KEYWORD(seq, x)
-
-
 // Process the select, where clauses
 #define LINQ_COL(var, col) col
-#define LINQ_SELECT_WHERE(data, seq) LINQ_COL data LINQ_TO_STRING(BOOST_PP_SEQ_TRANSFORM(LINQ_SELECT_WHERE_O, data, seq))
+#define LINQ_SELECT_WHERE(seq) LINQ_SELECT_WHERE_TRANSFORM(BOOST_PP_SEQ_ELEM(0, seq) ,BOOST_PP_SEQ_REST_N(1, seq))
+#define LINQ_SELECT_WHERE_TRANSFORM(data, seq) LINQ_COL data LINQ_SEQ_TO_STRING(BOOST_PP_SEQ_TRANSFORM(LINQ_SELECT_WHERE_O, data, seq))
 #define LINQ_SELECT_WHERE_O(s, data, x) BOOST_PP_IF(LINQ_IS_PAREN(x), LINQ_PROCESS_PAREN, LINQ_PROCESS_KEYWORD)(data, x)
+
+// Process from clauses
+// ()((x, col))()((y, x.col))(LINQ_SELECT)((x))
+// SPLIT
+// ( ((x, col)) )  ( ((y, x.col))(LINQ_SELECT)((x)) )
+// TRANSFORM
+// (SELECT_MANY(x, col))((y, x.col)(LINQ_SELECT)(x))
+// NEST
+#define LINQ_FROM(seq) LINQ_FROM_CHECK(LINQ_SEQ_SPLIT(seq, LINQ_FROM_P, data))
+#define LINQ_FROM_CHECK(seq) BOOST_PP_IF(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), LINQ_FROM_MULTI, LINQ_FROM_SINGLE)(seq)
+#define LINQ_FROM_MULTI(seq) LINQ_SEQ_NEST(LINQ_FROM_TRANSFORM(seq))
+#define LINQ_FROM_SINGLE(seq) LINQ_SELECT_WHERE(BOOST_PP_SEQ_HEAD(seq))
+
+#define LINQ_FROM_TRANSFORM(seq) BOOST_PP_SEQ_TRANSFORM(LINQ_FROM_OP, data, BOOST_PP_SEQ_POP_BACK(seq)) (LINQ_SELECT_WHERE(LINQ_BACK(seq)))
+#define LINQ_FROM_P(s, data, x) LINQ_IS_EMPTY(x)
+#define LINQ_FROM_OP(s, data, x) LINQ_SELECT_MANY LINQ_REM x
+
 // Transforms the sequence
-#define LINQ_TRANSFORM(seq) LINQ_X(LINQ_SELECT_WHERE(BOOST_PP_SEQ_ELEM(1, seq) ,BOOST_PP_SEQ_REST_N(2, seq)))
+#define LINQ_TRANSFORM(seq) LINQ_X(LINQ_FROM(seq))
 // And finally the LINQ macro
 #define LINQ(x) LINQ_TRANSFORM(LINQ_TO_SEQ(x))
+
+// LINQ(from(x, col) select(x))
+// LINQ(from(x, col) from(y, x.col) select(x+y))
 
 #endif
