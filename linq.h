@@ -9,6 +9,7 @@
 #define INCLUDE_GUARD_LINQ_H
 
 #include <utility>
+#include <boost/optional.hpp>
 #include <boost/preprocessor.hpp>
 #include <boost/preprocessor/facilities/is_empty.hpp>
 #include <boost/range.hpp> 
@@ -193,8 +194,61 @@ namespace linq {
 template <typename T>
 typename std::add_rvalue_reference<T>::type declval(); // no definition required
 
+// Lambdas aren't very nice, so we use this wrapper to make them play nicer. This
+// will make the function_object default constructible, even if it doesn't have a
+// default constructor. This helpful since these function objects are being used
+// inside of iterators.
+template<class Fun>
+struct function_object
+{
+    boost::optional<Fun> f;
+
+    function_object() 
+    {}
+    function_object(Fun f): f(f)
+    {}
+
+    function_object(const function_object & rhs) : f(rhs.f)
+    {}
+
+    // Assignment operator is just a copy construction, which does not provide
+    // the strong exception guarentee.
+    function_object& operator=(const function_object& rhs)
+    {
+        if (this != &rhs)
+        {
+            this->~function_object();
+            new (this) function_object(rhs);
+        }
+        return *this;
+    }
+
+    template<class F>
+    struct result
+    {};
+
+    template<class F, class T>
+    struct result<F(T)>
+    {
+        typedef decltype(linq::declval<Fun>()(linq::declval<T>())) type;
+    };
+
+    template<class T>
+    auto operator()(T && x) const LINQ_RETURNS((*f)(std::forward<T>(x)))
+
+    template<class T>
+    auto operator()(T && x) LINQ_RETURNS((*f)(std::forward<T>(x)))
+};
+
+template<class F>
+function_object<F> make_function_object(F f)
+{
+    return function_object<F>(f);
+}
+
+
 // bind_iterator
-template<class OuterIterator, class Selector, class SelectorRange = typename boost::result_of<Selector(typename boost::iterator_reference<OuterIterator>::type)>::type>
+template<class OuterIterator, class Selector, class SelectorRange = decltype(declval<Selector>()(declval<typename boost::iterator_reference<OuterIterator>::type>()))>
 struct bind_iterator
 : boost::iterator_facade
 <
@@ -205,30 +259,39 @@ struct bind_iterator
 >
 {
     typedef typename boost::range_iterator<SelectorRange >::type InnerIteraror;
+    //typedef typename boost::iterator_range<InnerIteraror>::type InnerRange;
 
     Selector selector;
     OuterIterator iterator;
     InnerIteraror inner_first;
     InnerIteraror inner_last;
-    SelectorRange r;
+    OuterIterator last;
+    //SelectorRange r;
 
-    bind_iterator(Selector selector, OuterIterator iterator) : selector(selector), iterator(iterator)
+    bind_iterator(Selector selector, OuterIterator iterator, OuterIterator last) : selector(selector), iterator(iterator), last(last)
     {
+        this->select();
+    }
+
+    void select()
+    {
+        for(;iterator!=last;iterator++)
+        {
+            if (inner_first==inner_last)
+            {
+                auto&& r = selector(*iterator);
+                inner_first = boost::begin(r);
+                inner_last = boost::end(r);
+            }
+            else inner_first++;
+            for(;inner_first!=inner_last;inner_first++)
+                return;
+        }
     }
 
     void increment()
     {
-        if (inner_last == inner_first)
-        {
-            r = selector(*iterator);
-            inner_first = boost::begin(r);
-            inner_last = boost::end(r);
-            iterator++;
-        }
-        else
-        {
-            inner_first++;
-        }
+        this->select();
     }
 
     bool equal(const bind_iterator& other) const
@@ -244,10 +307,20 @@ struct bind_iterator
 };
 
 template<class Iterator, class Selector>
-bind_iterator<Iterator, Selector> make_bind_iterator(Selector selector, Iterator iterator)
+bind_iterator<Iterator, Selector> make_bind_iterator(Selector selector, Iterator iterator, Iterator last)
 {
-    return bind_iterator<Iterator, Selector>(selector, iterator);
+    return bind_iterator<Iterator, Selector>(selector, iterator, last);
 }
+
+template<class Range, class Selector>
+auto bind_range(Range && r, Selector s) LINQ_RETURNS
+(
+    boost::make_iterator_range
+    (
+        make_bind_iterator(s, boost::begin(r), boost::end(r)),
+        make_bind_iterator(s, boost::end(r), boost::end(r))
+    )
+)
 
 // Bound range adaptor
 namespace detail {
@@ -260,14 +333,11 @@ struct bound_t
     }
 
     template<class Range>
-    friend auto operator|(Range && r, bound_t self) LINQ_RETURNS
-    (
-        boost::make_iterator_range
-        (
-            make_bind_iterator(self.s, boost::begin(r)),
-            make_bind_iterator(self.s, boost::end(r))
-        )
-    )
+    friend auto operator|(Range && r, bound_t self) -> decltype(bind_range(std::forward<Range>(r), std::declval<Selector>()))
+    {
+        return bind_range(std::forward<Range>(r), self.s);
+    }
+
 };
 }
 
@@ -277,58 +347,28 @@ detail::bound_t<Selector> bound(Selector s)
     return detail::bound_t<Selector>(s);
 }
 
+
+
 namespace detail {
-
-//This is used to workaround a bug in boost 1.49
-template<class Fun>
-struct transformer
-{
-    Fun f;
-
-    transformer(Fun f): f(f)
-    {}
-
-    template<class F>
-    struct result
-    {};
-
-    template<class F, class T>
-    struct result<F(T)>
-    {
-        typedef decltype(linq::declval<Fun>()(linq::declval<T>())) type;
-    };
-
-    template<class T>
-    auto operator()(T && x) const LINQ_RETURNS(f(std::forward<T>(x)))
-
-    template<class T>
-    auto operator()(T && x) LINQ_RETURNS(f(std::forward<T>(x)))
-};
-
-template<class F>
-transformer<F> make_transformer(F f)
-{
-    return transformer<F>(f);
-}
 
 // These are used to avoid using parenthessis with lambdas, since it
 // could perhaps result in a pathological case for the preprocessor.
 struct where_t
 {
     template<class Pred>
-    auto operator+(Pred p) LINQ_RETURNS(boost::adaptors::filtered(p))
+    auto operator+(Pred p) LINQ_RETURNS(boost::adaptors::filtered(make_function_object(p)))
 };
 
 struct select_t
 {
     template<class Tran>
-    auto operator+(Tran t) LINQ_RETURNS(boost::adaptors::transformed(make_transformer(t)))
+    auto operator+(Tran t) LINQ_RETURNS(boost::adaptors::transformed(make_function_object(t)))
 };
 
 struct select_many_t
 {
     template<class Sel>
-    auto operator+(Sel s) LINQ_RETURNS(linq::bound(s))
+    auto operator+(Sel s) LINQ_RETURNS(linq::bound(make_function_object(s)))
 };
 }
 
@@ -378,8 +418,9 @@ detail::where_t where = {};
 #define LINQ_PROCESS_KEYWORD(data, x) | LINQ_PROCESS_KEYWORD_RES(x data)
 #endif
 
-// Process the select, where clauses
 #define LINQ_COL(var, col) col
+
+// Process the select, where clauses
 #define LINQ_SELECT_WHERE(seq) LINQ_SELECT_WHERE_TRANSFORM(BOOST_PP_SEQ_ELEM(0, seq) ,BOOST_PP_SEQ_REST_N(1, seq))
 #define LINQ_SELECT_WHERE_TRANSFORM(data, seq) LINQ_COL data LINQ_SEQ_TO_STRING(BOOST_PP_SEQ_TRANSFORM(LINQ_SELECT_WHERE_O, data, seq))
 #define LINQ_SELECT_WHERE_O(s, data, x) BOOST_PP_IF(LINQ_IS_PAREN(x), LINQ_PROCESS_PAREN, LINQ_PROCESS_KEYWORD)(data, x)
@@ -398,14 +439,12 @@ detail::where_t where = {};
 
 #define LINQ_FROM_TRANSFORM(seq) BOOST_PP_SEQ_TRANSFORM(LINQ_FROM_OP, data, BOOST_PP_SEQ_POP_BACK(seq)) (LINQ_SELECT_WHERE(LINQ_BACK(seq)))
 #define LINQ_FROM_P(s, data, x) LINQ_IS_EMPTY(x)
-#define LINQ_FROM_OP(s, data, x) LINQ_SELECT_MANY LINQ_REM x
+#define LINQ_FROM_OP(s, data, x) LINQ_PROCESS_FROM LINQ_REM x
+#define LINQ_PROCESS_FROM(var, col) col | LINQ_SELECT_MANY(var, col)
 
 // Transforms the sequence
 #define LINQ_TRANSFORM(seq) LINQ_X(LINQ_FROM(seq))
 // And finally the LINQ macro
 #define LINQ(x) LINQ_TRANSFORM(LINQ_TO_SEQ(x))
-
-// LINQ(from(x, col) select(x))
-// LINQ(from(x, col) from(y, x.col) select(x+y))
 
 #endif
