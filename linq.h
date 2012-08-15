@@ -1,8 +1,8 @@
 /*=============================================================================
-    Copyright (c) 2012 Paul Fultz II
-    linq.h
-    Distributed under the Boost Software License, Version 1.0. (See accompanying
-    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+Copyright (c) 2012 Paul Fultz II
+linq.h
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
 #ifndef INCLUDE_GUARD_LINQ_H
@@ -12,7 +12,7 @@
 #include <boost/optional.hpp>
 #include <boost/preprocessor.hpp>
 #include <boost/preprocessor/facilities/is_empty.hpp>
-#include <boost/range.hpp> 
+#include <boost/range.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
@@ -51,16 +51,16 @@
 //
 #define LINQ_IS_EMPTY(x) BOOST_PP_CAT(LINQ_IS_EMPTY_, LINQ_IS_PAREN(x))(x)
 #define LINQ_IS_EMPTY_0(x) BOOST_PP_IS_EMPTY(x)
-#define LINQ_IS_EMPTY_1(x) 0 
+#define LINQ_IS_EMPTY_1(x) 0
 
 //
 // LINQ_HEAD retrieves the first element of a sequence.
 // Example:
 //
-//     LINQ_HEAD((1)(2)(3)) // Expands to (1)
+// LINQ_HEAD((1)(2)(3)) // Expands to (1)
 //
 #define LINQ_HEAD(x) LINQ_PICK_HEAD(LINQ_MARK x)
-#define LINQ_MARK(...) (__VA_ARGS__), 
+#define LINQ_MARK(...) (__VA_ARGS__),
 #define LINQ_PICK_HEAD(...) LINQ_PICK_HEAD_I(__VA_ARGS__,)
 #ifndef _MSC_VER
 #define LINQ_PICK_HEAD_I(x, ...) x
@@ -76,7 +76,7 @@
 // LINQ_TAIL retrieves the tail of a sequence.
 // Example:
 //
-//     LINQ_TAIL((1)(2)(3)) // Expands to (2)(3)
+// LINQ_TAIL((1)(2)(3)) // Expands to (2)(3)
 //
 #define LINQ_TAIL(x) LINQ_EAT x
 // Various utilities
@@ -93,13 +93,13 @@
 // LINQ_KEYWORD transforms the keyword. Keywords are generally defined
 // like this:
 //
-//     //This defines a `my_keyword` macro
-//     //NOTE: The space between the keyword and parenthesis is necessary
-//     #define LINQ_KEYWORD_my_keyword (MY_KEYWORD_MACRO)
+// //This defines a `my_keyword` macro
+// //NOTE: The space between the keyword and parenthesis is necessary
+// #define LINQ_KEYWORD_my_keyword (MY_KEYWORD_MACRO)
 //
 // Here is an example:
 //
-//     LINQ_KEYWORD(my_keyword foo) // Expands to (MY_KEYWORD_MACRO) foo
+// LINQ_KEYWORD(my_keyword foo) // Expands to (MY_KEYWORD_MACRO) foo
 //
 #define LINQ_KEYWORD(x) BOOST_PP_CAT(LINQ_KEYWORD_, x)
 
@@ -112,24 +112,24 @@
 // LINQ_PLACE retrieves whats placed in parenthesis. In essence it does
 // this:
 //
-//     LINQ_PLACE((1) foo) //Expands to 1
+// LINQ_PLACE((1) foo) //Expands to 1
 //
 // But when its used in the contexts of keywords, it will retrieve whats
 // been defined inside the parenthesis of a keyword. Heres an example:
 //
-//     //This defines a `my_keyword` macro
-//     //NOTE: The space between the keyword and parenthesis is necessary
-//     #define LINQ_KEYWORD_my_keyword (MY_KEYWORD_MACRO)
-//     LINQ_PLACE(LINQ_KEYWORD(my_keyword foo)) // Expands to MY_KEYWORD_MACRO
+// //This defines a `my_keyword` macro
+// //NOTE: The space between the keyword and parenthesis is necessary
+// #define LINQ_KEYWORD_my_keyword (MY_KEYWORD_MACRO)
+// LINQ_PLACE(LINQ_KEYWORD(my_keyword foo)) // Expands to MY_KEYWORD_MACRO
 //
 #define LINQ_PLACE(x) LINQ_EXPAND(LINQ_REM LINQ_PICK_HEAD(LINQ_MARK x))
 
 //
 // LINQ_TO_SEQ converts the keywords into a preprocessor sequence
-// 
+//
 #define LINQ_TO_SEQ(x) LINQ_TO_SEQ_WHILE_M \
 ( \
-    BOOST_PP_WHILE(LINQ_TO_SEQ_WHILE_P, LINQ_TO_SEQ_WHILE_O, (,x)) \
+BOOST_PP_WHILE(LINQ_TO_SEQ_WHILE_P, LINQ_TO_SEQ_WHILE_O, (,x)) \
 )
 
 #define LINQ_TO_SEQ_WHILE_P(r, state) LINQ_TO_SEQ_P state
@@ -138,18 +138,18 @@
 
 #define LINQ_TO_SEQ_P(prev, tail) BOOST_PP_NOT(LINQ_IS_EMPTY(tail))
 #define LINQ_TO_SEQ_O(prev, tail) \
-    BOOST_PP_IF(LINQ_IS_PAREN(tail), \
-        LINQ_TO_SEQ_PAREN, \
-        LINQ_TO_SEQ_KEYWORD \
-        )(prev, tail)
+BOOST_PP_IF(LINQ_IS_PAREN(tail), \
+LINQ_TO_SEQ_PAREN, \
+LINQ_TO_SEQ_KEYWORD \
+)(prev, tail)
 #define LINQ_TO_SEQ_PAREN(prev, tail) \
-    (prev (LINQ_HEAD(tail)), LINQ_TAIL(tail))
+(prev (LINQ_HEAD(tail)), LINQ_TAIL(tail))
 
 #define LINQ_TO_SEQ_KEYWORD(prev, tail) \
-    LINQ_TO_SEQ_REPLACE(prev, LINQ_KEYWORD(tail))
+LINQ_TO_SEQ_REPLACE(prev, LINQ_KEYWORD(tail))
 
 #define LINQ_TO_SEQ_REPLACE(prev, tail) \
-    (prev LINQ_HEAD(tail), LINQ_TAIL(tail))
+(prev LINQ_HEAD(tail), LINQ_TAIL(tail))
 
 #define LINQ_TO_SEQ_M(prev, tail) prev
 
@@ -157,7 +157,7 @@
 //
 // LINQ_SEQ_TO_STRING convert a sequence back to a string of tokens
 //
-#define LINQ_SEQ_TO_STRING(seq) BOOST_PP_SEQ_FOR_EACH(LINQ_SEQ_TO_STRING_EACH, ~, seq) 
+#define LINQ_SEQ_TO_STRING(seq) BOOST_PP_SEQ_FOR_EACH(LINQ_SEQ_TO_STRING_EACH, ~, seq)
 #define LINQ_SEQ_TO_STRING_EACH(r, data, x) x
 
 //
@@ -165,34 +165,50 @@
 //
 #define LINQ_SEQ_SPLIT(seq, pred, data) LINQ_SEQ_SPLIT_FOLD_LEFT_M(BOOST_PP_SEQ_FOLD_LEFT(LINQ_SEQ_SPLIT_FOLD_LEFT_O, (pred, data,,), seq))
 #define LINQ_SEQ_SPLIT_FOLD_LEFT_O(s, state, x) LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE((s, x, LINQ_REM state))
+#ifndef _MSC_VER
 #define LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE(x) LINQ_SEQ_SPLIT_OP x
+#else
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE(x) LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE_I x
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE_I(...) LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE_II((__VA_ARGS__))
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE_II(x) LINQ_SEQ_SPLIT_OP x
+#endif
 #define LINQ_SEQ_SPLIT_OP(s, x, pred, data, seq, elem) BOOST_PP_IF(pred(s, data, x), LINQ_SEQ_SPLIT_OP_TRUE, LINQ_SEQ_SPLIT_OP_FALSE)(x, pred, data, seq, elem)
 #define LINQ_SEQ_SPLIT_OP_TRUE(x, pred, data, seq, elem) BOOST_PP_IIF(LINQ_IS_PAREN(elem), \
-    (pred, data, seq(elem),),\
-    (pred, data, seq,) )
+(pred, data, seq(elem),),\
+(pred, data, seq,) )
 #define LINQ_SEQ_SPLIT_OP_FALSE(x, pred, data, seq, elem) (pred, data, seq, elem (x))
+#ifndef _MSC_VER
 #define LINQ_SEQ_SPLIT_FOLD_LEFT_M(x) LINQ_SEQ_SPLIT_M x
+#else
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_M_X(x) x
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_M_N(x) LINQ_SEQ_SPLIT_FOLD_LEFT_M_X(LINQ_SEQ_SPLIT_FOLD_LEFT_M_X(LINQ_SEQ_SPLIT_FOLD_LEFT_M_X(LINQ_SEQ_SPLIT_FOLD_LEFT_M_X(x))))
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_M(x) LINQ_SEQ_SPLIT_FOLD_LEFT_M_N(LINQ_SEQ_SPLIT_M x)
+#endif
 #define LINQ_SEQ_SPLIT_M(pred, data, seq, elem) seq BOOST_PP_IIF(LINQ_IS_PAREN(elem), (elem),)
 
-// 
+//
 // LINQ_SEQ_NEST
-// 
-#define LINQ_SEQ_NEST(seq) BOOST_PP_SEQ_FOLD_LEFT(LINQ_SEQ_NEST_OP, LINQ_BACK(seq) , BOOST_PP_SEQ_POP_BACK(seq)) 
+//
+#define LINQ_SEQ_NEST(seq) BOOST_PP_SEQ_FOLD_LEFT(LINQ_SEQ_NEST_OP, LINQ_BACK(seq) , BOOST_PP_SEQ_POP_BACK(seq))
 #define LINQ_SEQ_NEST_OP(s, state, x) x(state)
 
-// 
+//
 // LINQ_SEQ_NEST_REVERSE
-// 
-#define LINQ_SEQ_NEST_REVERSE(seq) BOOST_PP_SEQ_FOLD_RIGHT(LINQ_SEQ_NEST_OP, LINQ_BACK(seq) , BOOST_PP_SEQ_POP_BACK(seq)) 
+//
+#define LINQ_SEQ_NEST_REVERSE(seq) BOOST_PP_SEQ_FOLD_RIGHT(LINQ_SEQ_NEST_OP, LINQ_BACK(seq) , BOOST_PP_SEQ_POP_BACK(seq))
 
 // TODO: LINQ_SEQ_TRANSFORM_W
 
 
-namespace linq { 
+namespace linq {
 
-//MSVC 2010 doesn't provide declval
+// MSVC 2010 doesn't provide declval
+// We also return T&& instead std::add_rvalue_reference<T>
+// because MSVC has a buggy implementation of it.
+// So, this function will work in all cases except when T
+// is void(which should rarely happen).
 template <typename T>
-typename std::add_rvalue_reference<T>::type declval(); // no definition required
+T&& declval(); // no definition required
 
 // Lambdas aren't very nice, so we use this wrapper to make them play nicer. This
 // will make the function_object default constructible, even if it doesn't have a
@@ -203,7 +219,7 @@ struct function_object
 {
     boost::optional<Fun> f;
 
-    function_object() 
+    function_object()
     {}
     function_object(Fun f): f(f)
     {}
@@ -248,11 +264,11 @@ function_object<F> make_function_object(F f)
 
 
 // bind_iterator
-template<class OuterIterator, class Selector, class SelectorRange = decltype(declval<Selector>()(declval<typename boost::iterator_reference<OuterIterator>::type>()))>
+template<class OuterIterator, class Selector, class SelectorRange = typename std::result_of<Selector(typename boost::iterator_reference<OuterIterator>::type)>::type>
 struct bind_iterator
 : boost::iterator_facade
 <
-    bind_iterator<OuterIterator, Selector, SelectorRange>, 
+    bind_iterator<OuterIterator, Selector, SelectorRange>,
     typename boost::range_value<SelectorRange >::type,
     boost::forward_traversal_tag,
     typename boost::range_reference<SelectorRange >::type
@@ -333,9 +349,9 @@ struct bound_t
     }
 
     template<class Range>
-    friend auto operator|(Range && r, bound_t self) -> decltype(bind_range(std::forward<Range>(r), std::declval<Selector>()))
+    friend auto operator|(Range && r, const bound_t self) -> decltype(linq::bind_range(std::forward<Range>(r), linq::declval<Selector>()))
     {
-        return bind_range(std::forward<Range>(r), self.s);
+        return linq::bind_range(std::forward<Range>(r), self.s);
     }
 
 };
@@ -356,13 +372,13 @@ namespace detail {
 struct where_t
 {
     template<class Pred>
-    auto operator+(Pred p) LINQ_RETURNS(boost::adaptors::filtered(make_function_object(p)))
+    auto operator+(Pred p) LINQ_RETURNS(boost::adaptors::filtered(linq::make_function_object(p)))
 };
 
 struct select_t
 {
     template<class Tran>
-    auto operator+(Tran t) LINQ_RETURNS(boost::adaptors::transformed(make_function_object(t)))
+    auto operator+(Tran t) LINQ_RETURNS(boost::adaptors::transformed(linq::make_function_object(t)))
 };
 
 struct select_many_t
@@ -385,11 +401,11 @@ detail::where_t where = {};
 
 // These macros help in defining the clauses. So instead of writing this:
 //
-//     auto r = numbers | boost::adaptors::filtered([](int i) { return i > 2});
+// auto r = numbers | boost::adaptors::filtered([](int i) { return i > 2});
 //
 // This can be written:
 //
-//     auto r = numbers | LINQ_WHERE(i, numbers)(i > 2);
+// auto r = numbers | LINQ_WHERE(i, numbers)(i > 2);
 //
 #define LINQ_WHERE(var, col) linq::where + LINQ_LAMBDA_HEADER(var, col) LINQ_LAMBDA_BLOCK
 #define LINQ_SELECT(var, col) linq::select + LINQ_LAMBDA_HEADER(var, col) LINQ_LAMBDA_BLOCK
@@ -428,7 +444,7 @@ detail::where_t where = {};
 // Process from clauses
 // ()((x, col))()((y, x.col))(LINQ_SELECT)((x))
 // SPLIT
-// ( ((x, col)) )  ( ((y, x.col))(LINQ_SELECT)((x)) )
+// ( ((x, col)) ) ( ((y, x.col))(LINQ_SELECT)((x)) )
 // TRANSFORM
 // (SELECT_MANY(x, col))((y, x.col)(LINQ_SELECT)(x))
 // NEST
@@ -437,9 +453,18 @@ detail::where_t where = {};
 #define LINQ_FROM_MULTI(seq) LINQ_SEQ_NEST(LINQ_FROM_TRANSFORM(seq))
 #define LINQ_FROM_SINGLE(seq) LINQ_SELECT_WHERE(BOOST_PP_SEQ_HEAD(seq))
 
+
 #define LINQ_FROM_TRANSFORM(seq) BOOST_PP_SEQ_TRANSFORM(LINQ_FROM_OP, data, BOOST_PP_SEQ_POP_BACK(seq)) (LINQ_SELECT_WHERE(LINQ_BACK(seq)))
+
 #define LINQ_FROM_P(s, data, x) LINQ_IS_EMPTY(x)
+#ifndef _MSC_VER
 #define LINQ_FROM_OP(s, data, x) LINQ_PROCESS_FROM LINQ_REM x
+#else
+// MSVC Workarounds
+#define LINQ_FROM_OP(s, data, x) LINQ_FROM_OP_INVOKE(LINQ_REM x)
+#define LINQ_FROM_OP_INVOKE_X(x) x
+#define LINQ_FROM_OP_INVOKE(x) LINQ_FROM_OP_INVOKE_X(LINQ_PROCESS_FROM x)
+#endif
 #define LINQ_PROCESS_FROM(var, col) col | LINQ_SELECT_MANY(var, col)
 
 // Transforms the sequence
