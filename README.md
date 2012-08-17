@@ -1,7 +1,7 @@
 Linq
 ====
 
-Linq and list comprehension for C++:
+Linq for list comprehension in C++:
 
 ```c#
 std::vector<int> numbers = { 1, 2, 3, 4 };
