@@ -1,8 +1,8 @@
 /*=============================================================================
-Copyright (c) 2012 Paul Fultz II
-linq.h
-Distributed under the Boost Software License, Version 1.0. (See accompanying
-file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+    Copyright (c) 2012 Paul Fultz II
+    linq.h
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
 #ifndef INCLUDE_GUARD_LINQ_H
@@ -139,9 +139,9 @@ BOOST_PP_WHILE(LINQ_TO_SEQ_WHILE_P, LINQ_TO_SEQ_WHILE_O, (,x)) \
 #define LINQ_TO_SEQ_P(prev, tail) BOOST_PP_NOT(LINQ_IS_EMPTY(tail))
 #define LINQ_TO_SEQ_O(prev, tail) \
 BOOST_PP_IF(LINQ_IS_PAREN(tail), \
-LINQ_TO_SEQ_PAREN, \
-LINQ_TO_SEQ_KEYWORD \
-)(prev, tail)
+    LINQ_TO_SEQ_PAREN, \
+    LINQ_TO_SEQ_KEYWORD \
+    )(prev, tail)
 #define LINQ_TO_SEQ_PAREN(prev, tail) \
 (prev (LINQ_HEAD(tail)), LINQ_TAIL(tail))
 
@@ -174,8 +174,8 @@ LINQ_TO_SEQ_REPLACE(prev, LINQ_KEYWORD(tail))
 #endif
 #define LINQ_SEQ_SPLIT_OP(s, x, pred, data, seq, elem) BOOST_PP_IF(pred(s, data, x), LINQ_SEQ_SPLIT_OP_TRUE, LINQ_SEQ_SPLIT_OP_FALSE)(x, pred, data, seq, elem)
 #define LINQ_SEQ_SPLIT_OP_TRUE(x, pred, data, seq, elem) BOOST_PP_IIF(LINQ_IS_PAREN(elem), \
-(pred, data, seq(elem),),\
-(pred, data, seq,) )
+                                                                    (pred, data, seq(elem),),\
+                                                                    (pred, data, seq,) )
 #define LINQ_SEQ_SPLIT_OP_FALSE(x, pred, data, seq, elem) (pred, data, seq, elem (x))
 #ifndef _MSC_VER
 #define LINQ_SEQ_SPLIT_FOLD_LEFT_M(x) LINQ_SEQ_SPLIT_M x
@@ -275,14 +275,12 @@ struct bind_iterator
 >
 {
     typedef typename boost::range_iterator<SelectorRange >::type InnerIteraror;
-    //typedef typename boost::iterator_range<InnerIteraror>::type InnerRange;
 
     Selector selector;
     OuterIterator iterator;
     InnerIteraror inner_first;
     InnerIteraror inner_last;
     OuterIterator last;
-    //SelectorRange r;
 
     bind_iterator(Selector selector, OuterIterator iterator, OuterIterator last) : selector(selector), iterator(iterator), last(last)
     {
