@@ -15,6 +15,7 @@
 #include <boost/range.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include <numeric>
 
 //
 //
@@ -26,6 +27,10 @@
 // LINQ_RETURNS for auto return type deduction.
 //
 #define LINQ_RETURNS(...) -> decltype(__VA_ARGS__) { return (__VA_ARGS__); }
+
+
+#define LINQ_ERROR_RETURN_REQUIRES_NEEDS_AN_EXPRESSION(...) decltype(__VA_ARGS__)>::type { return __VA_ARGS__; }
+#define LINQ_RETURN_REQUIRES(...) -> typename boost::enable_if<__VA_ARGS__, LINQ_ERROR_RETURN_REQUIRES_NEEDS_AN_EXPRESSION
 
 //
 // LINQ_IS_PAREN is used to detect if the first token is a parenthesis.
@@ -80,9 +85,19 @@
 //
 #define LINQ_TAIL(x) LINQ_EAT x
 // Various utilities
+#define LINQ_EMPTY(...)
 #define LINQ_EAT(...)
 #define LINQ_REM(...) __VA_ARGS__
 #define LINQ_EXPAND(...) __VA_ARGS__
+#define LINQ_DEFER(...) __VA_ARGS__ LINQ_EMPTY()
+#define LINQ_OBSTRUCT(...) __VA_ARGS__ LINQ_DEFER(LINQ_EMPTY)()
+
+#define LINQ_EVAL(...) LINQ_EVAL_A(LINQ_EVAL_A(LINQ_EVAL_A(__VA_ARGS__)))
+#define LINQ_EVAL_A(...) LINQ_EVAL_B(LINQ_EVAL_B(LINQ_EVAL_B(__VA_ARGS__)))
+#define LINQ_EVAL_B(...) LINQ_EVAL_C(LINQ_EVAL_C(LINQ_EVAL_C(__VA_ARGS__)))
+#define LINQ_EVAL_C(...) LINQ_EVAL_D(LINQ_EVAL_D(LINQ_EVAL_D(__VA_ARGS__)))
+#define LINQ_EVAL_D(...) LINQ_EVAL_E(LINQ_EVAL_E(LINQ_EVAL_E(__VA_ARGS__)))
+#define LINQ_EVAL_E(...) __VA_ARGS__
 
 //
 // LINQ_BACK gets the last element of a sequence
@@ -197,8 +212,47 @@ LINQ_TO_SEQ_REPLACE(prev, LINQ_KEYWORD(tail))
 //
 #define LINQ_SEQ_NEST_REVERSE(seq) BOOST_PP_SEQ_FOLD_RIGHT(LINQ_SEQ_NEST_OP, LINQ_BACK(seq) , BOOST_PP_SEQ_POP_BACK(seq))
 
-// TODO: LINQ_SEQ_TRANSFORM_W
+//
+// LINQ_VARN_CAT
+//
+#define LINQ_VARN_CAT(n, tuple) LINQ_EVAL(LINQ_VARN_CAT_D(n, tuple))
+#define LINQ_VARN_CAT_D(n, tuple) LINQ_VARN_INVOKE((n, LINQ_REM tuple, BOOST_PP_INTERCEPT, BOOST_PP_INTERCEPT, BOOST_PP_INTERCEPT, BOOST_PP_INTERCEPT, BOOST_PP_INTERCEPT, BOOST_PP_INTERCEPT, BOOST_PP_INTERCEPT, BOOST_PP_INTERCEPT))
+#define LINQ_VARN_CAT_ID() LINQ_VARN_CAT_D
 
+#ifndef _MSC_VER
+#define LINQ_VARN_INVOKE(data)  LINQ_VARN_PRIMITIVE_CAT data
+#else
+// MSVC Workarounds
+#define LINQ_VARN_INVOKE(data)  LINQ_VARN_INVOKE_I(data)
+#define LINQ_VARN_INVOKE_I(data)  LINQ_VARN_PRIMITIVE_CAT data
+#endif
+#define LINQ_VARN_PRIMITIVE_CAT(n, a, b, c, d, e, f, g, h, ...) LINQ_VARN_CAT_E(a, n) LINQ_VARN_CAT_E(b, n) LINQ_VARN_CAT_E(c, n) LINQ_VARN_CAT_E(d, n) LINQ_VARN_CAT_E(e, n) LINQ_VARN_CAT_E(f, n) LINQ_VARN_CAT_E(g, n) LINQ_VARN_CAT_E(h, n) 
+
+#define LINQ_VARN_CAT_E(a, n) BOOST_PP_IF(LINQ_IS_PAREN(a), LINQ_VARN_CAT_EACH_PAREN, LINQ_VARN_CAT_EACH_TOKEN)(a, n)
+#define LINQ_VARN_CAT_EACH_PAREN(a, n) (LINQ_OBSTRUCT(LINQ_VARN_CAT_ID)()(n, a))
+#define LINQ_VARN_CAT_EACH_TOKEN(a, n)  a ## n
+
+//
+// LINQ_PARAMS
+//
+#define LINQ_PARAMS(n, ...) BOOST_PP_ENUM(n, LINQ_PARAMS_EACH, (__VA_ARGS__))
+#define LINQ_PARAMS_Z(z, n, ...) BOOST_PP_ENUM_ ## z(n, LINQ_PARAMS_EACH, (__VA_ARGS__)) 
+#define LINQ_PARAMS_EACH(z, n, data) LINQ_VARN_CAT(n, data)
+
+//
+// LINQ_GEN
+//
+#define LINQ_GEN(n, ...) BOOST_PP_REPEAT(n, LINQ_GEN_EACH, (__VA_ARGS__)) 
+#define LINQ_GEN_Z(z, n, ...) BOOST_PP_REPEAT_ ## z(n, LINQ_GEN_EACH, (__VA_ARGS__)) 
+#define LINQ_GEN_EACH(z, n, data) LINQ_VARN_CAT(n, data)
+
+
+
+//
+//
+// Extensions
+//
+//
 
 namespace linq {
 
@@ -209,6 +263,337 @@ namespace linq {
 // is void(which should rarely happen).
 template <typename T>
 T&& declval(); // no definition required
+
+//
+// is_iterator type trait
+//
+namespace detail {
+BOOST_MPL_HAS_XXX_TRAIT_DEF(iterator_category)
+}
+
+template<class T, class Enabler = void>
+struct is_iterator
+: boost::mpl::false_
+{};
+template<class T>
+struct is_iterator<T, BOOST_DEDUCED_TYPENAME boost::enable_if<detail::has_iterator_category<T> >::type >
+: boost::mpl::true_
+{};
+template<class T>
+struct is_iterator<T, BOOST_DEDUCED_TYPENAME boost::enable_if<boost::is_pointer<T> >::type >
+: boost::mpl::true_
+{};
+
+//
+// is_range type trait
+//
+template<class T>
+struct is_range : boost::mpl::eval_if< boost::is_const<T>,
+boost::has_range_const_iterator<BOOST_DEDUCED_TYPENAME boost::remove_const<T>::type>,
+boost::mpl::and_<boost::has_range_iterator<T>, boost::has_range_const_iterator<T> > 
+>::type
+{};
+template<class T, class U>
+struct is_range<std::pair<T, U> > : boost::mpl::and_<is_iterator<T>, is_iterator<U>, boost::is_same<T, U> >::type
+{};
+
+// 
+// Range extension
+//
+namespace detail {
+struct na {};
+
+template<class F, BOOST_PP_ENUM_BINARY_PARAMS_Z(1, 4, class T, = na BOOST_PP_INTERCEPT) >
+struct pipe_closure {};
+
+#define LINQ_PIPE_CLOSURE(z, n, data) \
+template<class F, LINQ_PARAMS(n, T), LINQ_PARAMS(BOOST_PP_SUB(4,n), na BOOST_PP_INTERCEPT)> \
+struct pipe_closure \
+{ \
+    LINQ_GEN(n, T, x, ; BOOST_PP_INTERCEPT) \
+    template<LINQ_PARAMS(n, class X)>\
+    pipe_closure(LINQ_PARAMS(n, X, && BOOST_PP_INTERCEPT, x)) \
+    : LINQ_PARAMS(n, x, (std::forward<X, > BOOST_PP_INTERCEPT, (x))) {} \
+    \
+    template<class Range> \
+    friend auto operator|(Range && r, pipe_closure p) LINQ_RETURN_REQUIRES(is_range<Range>) \
+    (F()(std::forward<Range>(r), LINQ_PARAMS(n, std::forward<T, > BOOST_PP_INTERCEPT, (p.x)) )) \
+\
+};
+BOOST_PP_REPEAT_FROM_TO(1, 4, LINQ_PIPE_CLOSURE, ~)
+}
+#define LINQ_RANGE_EXTENSION_OP(z, n, data) \
+    template<class Range, BOOST_PP_COMMA_IF(n) LINQ_PARAMS(n, class T)> \
+    auto operator()(Range && r BOOST_PP_COMMA_IF(n) LINQ_PARAMS(n, T, && BOOST_PP_INTERCEPT, x)) LINQ_RETURN_REQUIRES(is_range<Range>) \
+    (F()(std::forward<Range>(r) BOOST_PP_COMMA_IF(n) LINQ_PARAMS(n, std::forward<T, > BOOST_PP_INTERCEPT, (x)) )) \
+    \
+    template<LINQ_PARAMS(n, class T)> \
+    auto operator()(LINQ_PARAMS(n, T, && BOOST_PP_INTERCEPT, x) ) LINQ_RETURN_REQUIRES(boost::mpl::not_<is_range<T0> >) \
+    ( \
+        detail::pipe_closure<F, LINQ_PARAMS(n, T, && BOOST_PP_INTERCEPT)> \
+        (LINQ_PARAMS(n, std::forward<T, > BOOST_PP_INTERCEPT, (x)) ) \
+    ) 
+
+template<class F, int N=-1>
+struct range_extension
+{
+    BOOST_PP_REPEAT(4, LINQ_RANGE_EXTENSION_OP, ~)
+    template<class Range>
+    friend auto operator|(Range && r, range_extension) LINQ_RETURN_REQUIRES(is_range<Range>)
+    (F()(std::forward<Range>(r)))
+};
+
+#define LINQ_RANGE_EXTENSION(z, n, data) \
+template<class F> \
+struct range_extension<F, n> \
+{ \
+    LINQ_RANGE_EXTENSION_OP(z, n, data) \
+    template<class Range> \
+    friend auto operator|(Range && r, range_extension) LINQ_RETURN_REQUIRES(is_range<Range>) \
+    (F()(std::forward<Range>(r))) \
+};
+BOOST_PP_REPEAT_FROM_TO(1, 4, LINQ_RANGE_EXTENSION, ~)
+
+//
+// find
+//
+namespace detail {
+
+// TODO: Add overload for string
+template<class Range, class T>
+auto find(Range && r, T && x) LINQ_RETURNS(std::find(boost::begin(r), boost::end(r), std::forward<T>(x)))
+
+struct find_t
+{
+    template<class Range, class T>
+    auto operator()(Range && r, T && x) 
+    LINQ_RETURNS(find(std::forward<Range>(r), std::forward<T>(x)))
+};
+}
+namespace {
+range_extension<detail::find_t, 1> find = {};
+}
+
+//
+// select
+//
+namespace detail {
+struct select_t
+{
+    //TODO: make it work for empty and single ranges
+
+    template<class F, class It>
+    static auto make_transform_iterator(F f, It it) LINQ_RETURNS(boost::transform_iterator<F, It>(it, f))
+
+    template<class Range, class Selector>
+    auto operator()(Range && r, Selector selector) 
+    LINQ_RETURNS(boost::make_iterator_range(make_transform_iterator(selector, boost::begin(r)), make_transform_iterator(selector, boost::end(r))) )
+
+};
+}
+namespace {
+range_extension<detail::select_t> select = {};
+}
+
+
+//
+// aggregate
+//
+namespace detail {
+struct aggregate_t
+{
+    //TODO: make it work for empty and single ranges
+    template<class Range, class Reducer>
+    auto operator()(Range && r, Reducer reducer) LINQ_RETURNS(std::accumulate(++boost::begin(r), boost::end(r), *boost::begin(r)))
+
+    template<class Range, class Seed, class Reducer>
+    auto operator()(Range && r, Seed && s, Reducer reducer) LINQ_RETURNS(std::accumulate(boost::begin(r), boost::end(r), s, reducer))
+
+    template<class Range, class Seed, class Reducer>
+    auto operator()(Range && r, Seed && s, Reducer reducer, Selector sel) LINQ_RETURNS(sel(std::accumulate(boost::begin(r), boost::end(r), s, reducer)))
+};
+}
+namespace {
+range_extension<detail::aggregate_t> aggregate = {};
+}
+
+//
+// all
+//
+namespace detail {
+struct all_t
+{
+    template<class Range, class Pred>
+    auto operator()(Range && r, Pred p) LINQ_RETURNS(std::all_of(boost::begin(r), boost::end(r), pred))
+};
+}
+namespace {
+range_extension<detail::all_t> all = {};
+}
+
+//
+// any
+//
+namespace detail {
+struct any_t
+{
+    template<class Range, class Pred>
+    auto operator()(Range && r) LINQ_RETURNS(!boost::empty(r))
+
+    template<class Range, class Pred>
+    auto operator()(Range && r, Pred p) LINQ_RETURNS(std::any_of(boost::begin(r), boost::end(r), pred))
+};
+}
+namespace {
+range_extension<detail::any_t> any = {};
+}
+
+//
+// average
+//
+// TODO
+
+//
+// concat
+//
+namespace detail {
+struct concat_t
+{
+    template<class Range1, class Range2>
+    auto operator()(Range1 && r1, Range2 && r2) LINQ_RETURNS(boost::join(r1, r2))
+};
+}
+namespace {
+range_extension<detail::concat_t, 2> concat = {};
+}
+
+//
+// contains
+//
+
+
+//
+// count
+//
+
+
+//
+// default_if_empty
+//
+
+//
+// distinct
+//
+
+//
+// element_at
+//
+
+//
+// except
+//
+
+
+
+//
+// first
+//
+
+//
+// first_or_default
+//
+
+//
+// group_by
+//
+
+//
+// intersect
+//
+
+//
+// join
+//
+
+//
+// last
+//
+
+//
+// last_or_default
+//
+
+//
+// max
+//
+
+//
+// min
+//
+
+//
+// order_by
+//
+
+//
+// reverse
+//
+
+//
+// select_many
+//
+
+//
+// sequence_equal
+//
+
+//
+// single
+//
+
+//
+// single_or_default
+//
+
+//
+// skip
+//
+
+//
+// skip_while
+//
+
+//
+// sum
+//
+
+//
+// take
+//
+
+//
+// take_while
+//
+
+//
+// to_container
+//
+
+//
+// to_string
+//
+
+//
+// union
+//
+
+//
+// where
+//
+
+//
+// zip
+//
 
 // Lambdas aren't very nice, so we use this wrapper to make them play nicer. This
 // will make the function_object default constructible, even if it doesn't have a
