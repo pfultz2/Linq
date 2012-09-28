@@ -247,6 +247,13 @@ LINQ_TO_SEQ_REPLACE(prev, LINQ_KEYWORD(tail))
 #define LINQ_GEN_EACH(z, n, data) LINQ_VARN_CAT(n, data)
 
 
+//
+// LINQ_FORWARD_PARAMS
+//
+#define LINQ_FORWARD_PARAMS(n, type, var) BOOST_PP_ENUM(n, LINQ_FORWARD_PARAMS_EACH, (type, var))
+#define LINQ_FORWARD_PARAMS_Z(z, n, type, var) BOOST_PP_ENUM_ ## z(n, LINQ_FORWARD_PARAMS_EACH, (type, var))
+#define LINQ_FORWARD_PARAMS_EACH(z, n, data) std::forward<BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2, 0, data),n)>(BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2, 1, data),n))
+
 
 //
 //
@@ -300,59 +307,62 @@ struct is_range<std::pair<T, U> > : boost::mpl::and_<is_iterator<T>, is_iterator
 // 
 // Range extension
 //
+#ifndef LINQ_LIMIT_EXTENSION
+#define LINQ_LIMIT_EXTENSION 4
+#endif
 namespace detail {
 struct na {};
 
-template<class F, BOOST_PP_ENUM_BINARY_PARAMS_Z(1, 4, class T, = na BOOST_PP_INTERCEPT) >
+template<class F, BOOST_PP_ENUM_BINARY_PARAMS_Z(1, LINQ_LIMIT_EXTENSION, class T, = na BOOST_PP_INTERCEPT) >
 struct pipe_closure {};
 
+#define LINQ_PIPE_CLOSURE_MEMBERS_OP(z, n, data) T ## n x ## n;
+#define LINQ_PIPE_CLOSURE_CONSTRUCTOR_OP(z, n, data) x ## n(std::forward<X ## n>(x ## n))
 #define LINQ_PIPE_CLOSURE(z, n, data) \
-template<class F, LINQ_PARAMS(n, T), LINQ_PARAMS(BOOST_PP_SUB(4,n), na BOOST_PP_INTERCEPT)> \
+template<class F, BOOST_PP_ENUM_PARAMS_Z(z, n, T), BOOST_PP_ENUM_PARAMS_Z(z, BOOST_PP_SUB(LINQ_LIMIT_EXTENSION,n), na BOOST_PP_INTERCEPT)> \
 struct pipe_closure \
 { \
-    LINQ_GEN(n, T, x, ; BOOST_PP_INTERCEPT) \
+    BOOST_PP_REPEAT_ ## z(n, LINQ_PIPE_CLOSURE_MEMBERS_OP, ~) \
     template<LINQ_PARAMS(n, class X)>\
     pipe_closure(LINQ_PARAMS(n, X, && BOOST_PP_INTERCEPT, x)) \
-    : LINQ_PARAMS(n, x, (std::forward<X, > BOOST_PP_INTERCEPT, (x))) {} \
+    : BOOST_PP_ENUM_ ## z(n, LINQ_PIPE_CLOSURE_CONSTRUCTOR_OP, ~) \
+    {} \
     \
     template<class Range> \
     friend auto operator|(Range && r, pipe_closure p) LINQ_RETURN_REQUIRES(is_range<Range>) \
-    (F()(std::forward<Range>(r), LINQ_PARAMS(n, std::forward<T, > BOOST_PP_INTERCEPT, (p.x)) )) \
+    (F()(std::forward<Range>(r), LINQ_FORWARD_PARAMS(n, T, x) )) \
 \
 };
-BOOST_PP_REPEAT_FROM_TO(1, 4, LINQ_PIPE_CLOSURE, ~)
+BOOST_PP_REPEAT_FROM_TO_1(1, LINQ_LIMIT_EXTENSION, LINQ_PIPE_CLOSURE, ~)
 }
 #define LINQ_RANGE_EXTENSION_OP(z, n, data) \
-    template<class Range, BOOST_PP_COMMA_IF(n) LINQ_PARAMS(n, class T)> \
-    auto operator()(Range && r BOOST_PP_COMMA_IF(n) LINQ_PARAMS(n, T, && BOOST_PP_INTERCEPT, x)) LINQ_RETURN_REQUIRES(is_range<Range>) \
-    (F()(std::forward<Range>(r) BOOST_PP_COMMA_IF(n) LINQ_PARAMS(n, std::forward<T, > BOOST_PP_INTERCEPT, (x)) )) \
-    \
     template<LINQ_PARAMS(n, class T)> \
-    auto operator()(LINQ_PARAMS(n, T, && BOOST_PP_INTERCEPT, x) ) LINQ_RETURN_REQUIRES(boost::mpl::not_<is_range<T0> >) \
+    auto operator()(LINQ_PARAMS(n, T, && x) ) const LINQ_RETURNS \
     ( \
-        detail::pipe_closure<F, LINQ_PARAMS(n, T, && BOOST_PP_INTERCEPT)> \
-        (LINQ_PARAMS(n, std::forward<T, > BOOST_PP_INTERCEPT, (x)) ) \
+        detail::pipe_closure<F, BOOST_PP_ENUM_BINARY_PARAMS_Z(z, n, T, && BOOST_PP_INTERCEPT)> \
+        (LINQ_FORWARD_PARAMS_Z(z, n, T, x) ) \
     ) 
 
-template<class F, int N=-1>
+template<class F>
 struct range_extension
 {
-    BOOST_PP_REPEAT(4, LINQ_RANGE_EXTENSION_OP, ~)
+    BOOST_PP_REPEAT_1(LINQ_LIMIT_EXTENSION, LINQ_RANGE_EXTENSION_OP, ~)
     template<class Range>
     friend auto operator|(Range && r, range_extension) LINQ_RETURN_REQUIRES(is_range<Range>)
     (F()(std::forward<Range>(r)))
+
+    range_extension<F>& operator()
+    {
+        return *this;
+    }
+
+    const range_extension<F>& operator() const
+    {
+        return *this;
+    }
 };
 
-#define LINQ_RANGE_EXTENSION(z, n, data) \
-template<class F> \
-struct range_extension<F, n> \
-{ \
-    LINQ_RANGE_EXTENSION_OP(z, n, data) \
-    template<class Range> \
-    friend auto operator|(Range && r, range_extension) LINQ_RETURN_REQUIRES(is_range<Range>) \
-    (F()(std::forward<Range>(r))) \
-};
-BOOST_PP_REPEAT_FROM_TO(1, 4, LINQ_RANGE_EXTENSION, ~)
+#define LINQ_EXT(name)
 
 //
 // find
@@ -371,7 +381,7 @@ struct find_t
 };
 }
 namespace {
-range_extension<detail::find_t, 1> find = {};
+range_extension<detail::find_t> find = {};
 }
 
 //
@@ -464,22 +474,116 @@ struct concat_t
 };
 }
 namespace {
-range_extension<detail::concat_t, 2> concat = {};
+range_extension<detail::concat_t> concat = {};
 }
 
 //
 // contains
 //
+namespace detail {
+struct contains_t
+{
+    template<class Range, class T>
+    auto operator()(Range && r, T && x) LINQ_RETURNS(return (r | linq::find(x) != boost::end(r)))
+};
+}
+namespace {
+range_extension<detail::contains_t> contains = {};
+}
 
 
 //
 // count
 //
+namespace detail {
+struct count_t
+{
+    // TODO: add overload for random access ranges
+    template<class Range>
+    long operator()(Range && r)
+    {
+        return std::count_if(boost::begin(r), boost::end(r), [](decltype(*boost::begin(r))) {return true;});
+    }
 
+    template<class Range, class Pred>
+    long operator()(Range && r, Pred p)
+    {
+        return std::count_if(boost::begin(r), boost::end(r), p);
+    }
+};
+}
+namespace {
+range_extension<detail::count_t> count = {};
+}
 
 //
 // default_if_empty
 //
+namespace detail {
+
+template<class Iterator, class Value=typename boost::iterator_value<Iterator>::type>
+struct default_if_empty_iterator
+: boost::iterator_facade<default_if_empty_iterator, Value, boost::forward_traversal_tag>
+{
+    const bool empty;
+    Iterator it;
+    Value* ref;
+    boost::optional<Value> v;
+
+    default_if_empty_iterator(bool empty, Iterator it, Value x)
+    : empty(empty), it(it), v(not empty, x)
+    {}
+
+    // TODO: Assign operator
+
+    void increment()
+    {
+        if (not empty) it++;
+        else v = boost::optional<Value>();
+    }
+
+    bool equal(const default_if_empty_iterator<Iterator>& other) const
+    {
+        return 
+        (
+            it == other.it and
+            (not (v xor other.v))
+        );
+    }
+
+    typename boost::iteraror_reference<Iterator>::type deref() const
+    {
+        if (not empty) return *it;
+        else return *v;
+    }
+};
+
+template<class Iterator, class Value>
+auto make_default_if_empty_iterator(bool empty, Iterator && it, Value && v) LINQ_RETURNS
+(default_if_empty_iterator<Iterator>(empty, it, v))
+
+template<class Range, class Value>
+auto make_default_if_empty_range(bool empty, Range && r, Value && v) LINQ_RETURNS
+(boost::make_iterator_range
+(
+    make_default_if_empty_iterator(empty, boost::begin(r), v),
+    make_default_if_empty_iterator(empty, boost::end(r), v)
+))
+
+struct default_if_empty_t
+{
+    template<class Range, class T>
+    auto operator()(Range && r, T && x) LINQ_RETURNS
+    (make_default_if_empty_range(boost::empty(r), r, x))
+
+    template<class Range, class T>
+    auto operator()(Range && r) LINQ_RETURNS
+    (make_default_if_empty_range(boost::empty(r), r, typename boost::range_value<Range>::type()))
+};
+}
+namespace {
+range_extension<detail::default_if_empty_t> default_if_empty = {};
+}
 
 //
 // distinct
