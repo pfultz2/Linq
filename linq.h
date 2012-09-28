@@ -701,6 +701,24 @@ range_extension<detail::distinct_t> distinct = {};
 //
 // element_at
 //
+namespace detail {
+struct element_at_t
+{
+    template<class Iterator>
+    static Iterator advance_it(Iterator it, std::size_t n)
+    {
+        std::advance(it, n);
+        return it;
+    }
+    // TODO: Throw when its out of range
+    // TODO: Add overload to provide a fallback value when its out of range
+    template<class Range>
+    auto operator()(Range && r) const LINQ_RETURNS(*(advance_it(boost::begin(r))));
+};
+}
+namespace {
+range_extension<detail::element_at_t> element_at = {};
+}
 
 //
 // except
