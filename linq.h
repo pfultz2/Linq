@@ -26,7 +26,7 @@
 //
 // LINQ_RETURNS for auto return type deduction.
 //
-#define LINQ_RETURNS(...) -> decltype(__VA_ARGS__) { return (__VA_ARGS__); }
+#define LINQ_RETURNS(...) -> decltype(__VA_ARGS__) { return (__VA_ARGS__); } static_assert(true, "")
 
 
 #define LINQ_ERROR_RETURN_REQUIRES_NEEDS_AN_EXPRESSION(...) decltype(__VA_ARGS__)>::type { return __VA_ARGS__; }
