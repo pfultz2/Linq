@@ -15,6 +15,8 @@
 #include <boost/range.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 #include <numeric>
 
 //
@@ -341,7 +343,7 @@ BOOST_PP_REPEAT_FROM_TO_1(1, LINQ_LIMIT_EXTENSION, LINQ_PIPE_CLOSURE, ~)
     ( \
         detail::pipe_closure<F, BOOST_PP_ENUM_BINARY_PARAMS_Z(z, n, T, && BOOST_PP_INTERCEPT)> \
         (LINQ_FORWARD_PARAMS_Z(z, n, T, x) ) \
-    ) 
+    ); 
 
 template<class F>
 struct range_extension
@@ -365,19 +367,99 @@ struct range_extension
 #define LINQ_EXT(name)
 
 //
+// set_filter_iterator
+//
+namespace detail {
+
+template <class Predicate, class Iterator>
+struct set_filter_iterator
+: boost::iterator_adaptor<set_filter_iterator<Predicate, Iterator, Iterator, boost::use_default, boost::forward_traversal_tag>
+{
+
+    // Probably should be the initial base class so it can be
+    // optimized away via EBO if it is an empty class.
+    Predicate predicate;
+    Iterator last;
+    typedef boost::unordered_set<typename boost::iterator_value<Iterator>::type> set_t;
+    set_t set;
+
+    typedef boost::iterator_adaptor<set_filter_iterator<Predicate, Iterator, Iterator, boost::use_default, boost::forward_traversal_tag> super_t;
+
+    set_filter_iterator() { }
+
+    set_filter_iterator(Predicate f, Iterator x, Iterator l = Iterator())
+        : super_t(x), predicate(f), last(l)
+    {
+        satisfy_predicate();
+    }
+
+    set_filter_iterator(Iterator x, Iterator l = Iterator())
+      : super_t(x), predicate(), last(l)
+    {
+        satisfy_predicate();
+    }
+
+    // template<class OtherIterator>
+    // set_filter_iterator(
+    //     set_filter_iterator<Predicate, OtherIterator> const& t
+    //     , typename enable_if_convertible<OtherIterator, Iterator>::type* = 0
+    //     )
+    //     : super_t(t.base()), predicate(t.predicate()), last(t.end()) {}
+
+    Predicate predicate() const { return predicate; }
+
+    Iterator end() const { return last; }
+
+    void increment()
+    {
+        ++(this->base_reference());
+        satisfy_predicate();
+    }
+
+    void satisfy_predicate()
+    {
+        while (this->base() != this->last && !this->predicate(*this->base(), this->set))
+        {
+            ++(this->base_reference());
+        }
+    }
+};
+
+template<class Iterator, class Predicate>
+auto make_set_filter_iterator(Iterator it, Predicate p) LINQ_RETURNS
+(set_filter_iterator<Predicate, Iterator>(p, it));
+
+template<class Iterator, class Predicate>
+auto make_set_filter_iterator(Iterator it, Iterator last, Predicate p) LINQ_RETURNS
+(set_filter_iterator<Predicate, Iterator>(p, it, last));
+
+template<class Range, class Predicate>
+auto make_set_filter_range(Range && r, Predicate p) LINQ_RETURNS
+(boost::make_iterator_range
+(
+make_set_filter_iterator(boost::begin(r), boost::end(r), p),
+make_set_filter_iterator(boost::end(r), p)
+)) 
+
+}
+
+
+
+
+//
 // find
 //
 namespace detail {
 
 // TODO: Add overload for string
 template<class Range, class T>
-auto find(Range && r, T && x) LINQ_RETURNS(std::find(boost::begin(r), boost::end(r), std::forward<T>(x)))
+auto find(Range && r, T && x) LINQ_RETURNS(std::find(boost::begin(r), boost::end(r), std::forward<T>(x)));
 
 struct find_t
 {
     template<class Range, class T>
     auto operator()(Range && r, T && x) 
-    LINQ_RETURNS(find(std::forward<Range>(r), std::forward<T>(x)))
+    LINQ_RETURNS(find(std::forward<Range>(r), std::forward<T>(x)));
 };
 }
 namespace {
@@ -393,11 +475,11 @@ struct select_t
     //TODO: make it work for empty and single ranges
 
     template<class F, class It>
-    static auto make_transform_iterator(F f, It it) LINQ_RETURNS(boost::transform_iterator<F, It>(it, f))
+    static auto make_transform_iterator(F f, It it) LINQ_RETURNS(boost::transform_iterator<F, It>(it, f));
 
     template<class Range, class Selector>
     auto operator()(Range && r, Selector selector) 
-    LINQ_RETURNS(boost::make_iterator_range(make_transform_iterator(selector, boost::begin(r)), make_transform_iterator(selector, boost::end(r))) )
+    LINQ_RETURNS(boost::make_iterator_range(make_transform_iterator(selector, boost::begin(r)), make_transform_iterator(selector, boost::end(r))) );
 
 };
 }
@@ -414,13 +496,13 @@ struct aggregate_t
 {
     //TODO: make it work for empty and single ranges
     template<class Range, class Reducer>
-    auto operator()(Range && r, Reducer reducer) LINQ_RETURNS(std::accumulate(++boost::begin(r), boost::end(r), *boost::begin(r)))
+    auto operator()(Range && r, Reducer reducer) LINQ_RETURNS(std::accumulate(++boost::begin(r), boost::end(r), *boost::begin(r)));
 
     template<class Range, class Seed, class Reducer>
-    auto operator()(Range && r, Seed && s, Reducer reducer) LINQ_RETURNS(std::accumulate(boost::begin(r), boost::end(r), s, reducer))
+    auto operator()(Range && r, Seed && s, Reducer reducer) LINQ_RETURNS(std::accumulate(boost::begin(r), boost::end(r), s, reducer));
 
     template<class Range, class Seed, class Reducer>
-    auto operator()(Range && r, Seed && s, Reducer reducer, Selector sel) LINQ_RETURNS(sel(std::accumulate(boost::begin(r), boost::end(r), s, reducer)))
+    auto operator()(Range && r, Seed && s, Reducer reducer, Selector sel) LINQ_RETURNS(sel(std::accumulate(boost::begin(r), boost::end(r), s, reducer)));
 };
 }
 namespace {
@@ -434,7 +516,7 @@ namespace detail {
 struct all_t
 {
     template<class Range, class Pred>
-    auto operator()(Range && r, Pred p) LINQ_RETURNS(std::all_of(boost::begin(r), boost::end(r), pred))
+    auto operator()(Range && r, Pred p) LINQ_RETURNS(std::all_of(boost::begin(r), boost::end(r), pred));
 };
 }
 namespace {
@@ -451,7 +533,7 @@ struct any_t
     auto operator()(Range && r) LINQ_RETURNS(!boost::empty(r))
 
     template<class Range, class Pred>
-    auto operator()(Range && r, Pred p) LINQ_RETURNS(std::any_of(boost::begin(r), boost::end(r), pred))
+    auto operator()(Range && r, Pred p) LINQ_RETURNS(std::any_of(boost::begin(r), boost::end(r), pred));
 };
 }
 namespace {
@@ -470,7 +552,7 @@ namespace detail {
 struct concat_t
 {
     template<class Range1, class Range2>
-    auto operator()(Range1 && r1, Range2 && r2) LINQ_RETURNS(boost::join(r1, r2))
+    auto operator()(Range1 && r1, Range2 && r2) LINQ_RETURNS(boost::join(r1, r2));
 };
 }
 namespace {
@@ -484,7 +566,7 @@ namespace detail {
 struct contains_t
 {
     template<class Range, class T>
-    auto operator()(Range && r, T && x) LINQ_RETURNS(return (r | linq::find(x) != boost::end(r)))
+    auto operator()(Range && r, T && x) LINQ_RETURNS(return (r | linq::find(x) != boost::end(r)));
 };
 }
 namespace {
@@ -560,7 +642,7 @@ struct default_if_empty_iterator
 
 template<class Iterator, class Value>
 auto make_default_if_empty_iterator(bool empty, Iterator && it, Value && v) LINQ_RETURNS
-(default_if_empty_iterator<Iterator>(empty, it, v))
+(default_if_empty_iterator<Iterator>(empty, it, v));
 
 template<class Range, class Value>
 auto make_default_if_empty_range(bool empty, Range && r, Value && v) LINQ_RETURNS
@@ -568,17 +650,17 @@ auto make_default_if_empty_range(bool empty, Range && r, Value && v) LINQ_RETURN
 (
     make_default_if_empty_iterator(empty, boost::begin(r), v),
     make_default_if_empty_iterator(empty, boost::end(r), v)
-))
+));
 
 struct default_if_empty_t
 {
     template<class Range, class T>
     auto operator()(Range && r, T && x) LINQ_RETURNS
-    (make_default_if_empty_range(boost::empty(r), r, x))
+    (make_default_if_empty_range(boost::empty(r), r, x));
 
     template<class Range, class T>
     auto operator()(Range && r) LINQ_RETURNS
-    (make_default_if_empty_range(boost::empty(r), r, typename boost::range_value<Range>::type()))
+    (make_default_if_empty_range(boost::empty(r), r, typename boost::range_value<Range>::type()));
 };
 }
 namespace {
@@ -588,6 +670,33 @@ range_extension<detail::default_if_empty_t> default_if_empty = {};
 //
 // distinct
 //
+namespace detail {
+struct distinct_t
+{
+    struct predicate
+    {
+        template<class T, class Set>
+        bool operator()(const T& x, Set& s) const
+        {
+            if (s.find(x) != s.end())
+            {
+                s.insert(x);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    };
+    // TODO: Add support for an equality selector
+    template<class Range>
+    auto operator()(Range && r) const LINQ_RETURNS(make_set_filter_range(r, p));
+};
+}
+namespace {
+range_extension<detail::distinct_t> distinct = {};
+}
 
 //
 // element_at
@@ -739,10 +848,10 @@ struct function_object
     };
 
     template<class T>
-    auto operator()(T && x) const LINQ_RETURNS((*f)(std::forward<T>(x)))
+    auto operator()(T && x) const LINQ_RETURNS((*f)(std::forward<T>(x)));
 
     template<class T>
-    auto operator()(T && x) LINQ_RETURNS((*f)(std::forward<T>(x)))
+    auto operator()(T && x) LINQ_RETURNS((*f)(std::forward<T>(x)));
 };
 
 template<class F>
@@ -823,7 +932,7 @@ auto bind_range(Range && r, Selector s) LINQ_RETURNS
         make_bind_iterator(s, boost::begin(r), boost::end(r)),
         make_bind_iterator(s, boost::end(r), boost::end(r))
     )
-)
+);
 
 // Bound range adaptor
 namespace detail {
@@ -859,19 +968,19 @@ namespace detail {
 struct where_t
 {
     template<class Pred>
-    auto operator+(Pred p) LINQ_RETURNS(boost::adaptors::filtered(linq::make_function_object(p)))
+    auto operator+(Pred p) LINQ_RETURNS(boost::adaptors::filtered(linq::make_function_object(p)));
 };
 
 struct select_t
 {
     template<class Tran>
-    auto operator+(Tran t) LINQ_RETURNS(boost::adaptors::transformed(linq::make_function_object(t)))
+    auto operator+(Tran t) LINQ_RETURNS(boost::adaptors::transformed(linq::make_function_object(t)));
 };
 
 struct select_many_t
 {
     template<class Sel>
-    auto operator+(Sel s) LINQ_RETURNS(linq::bound(make_function_object(s)))
+    auto operator+(Sel s) LINQ_RETURNS(linq::bound(make_function_object(s)));
 };
 }
 
