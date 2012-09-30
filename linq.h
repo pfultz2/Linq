@@ -462,7 +462,27 @@ make_set_filter_iterator(boost::end(r), p)
 
 }
 
+//
+// always predicate
+//
+namespace detail {
 
+struct always
+{
+    template<class T>
+    bool operator()(T) { return true; }
+};
+}
+
+//
+// or_default
+//
+namespace detail {
+
+template<class Iterator, class Value>
+auto or_default(Iterator it, Iterator last, Value && v) LINQ_RETURNS
+((it != last) ? *it : std::forward<Value>(v)); 
+}
 
 
 //
@@ -778,11 +798,46 @@ range_extension<detail::except_t> except = {};
 //
 // first
 //
+namespace detail {
+struct first_t
+{
+    template<class Iterator, class Predicate, class Value>
+    static boost::iterator_value<Iterator>::type first_it(Iterator first, Iterator last, Predicate p, Value && v)
+    {
+        auto it = std::find_if(first, last, p);
+        if (it == last) return v;
+        else return *it;
+    }
 
+    template<class Range, class Predicate, class Value>
+    auto operator()(Range && r, Predicate p, Value && v) LINQ_RETURNS
+    (first_it(boost::begin(r), boost::end(r), p, std::forward<Value>(v)));
+
+    template<class Range>
+    auto operator()(Range && r) LINQ_RETURNS(*(boost::begin(r)));
+
+};
+}
+namespace {
+range_extension<detail::first_t> first = {};
+}
 
 //
 // first_or_default
 //
+namespace detail {
+struct first_or_default_t
+{
+    template<class Range>
+    auto operator()(Range && r) LINQ_RETURNS(r | linq::first(always(), typename boost::range_value<Range>::type()));
+
+    template<class Range, class Predicate>
+    auto operator()(Range && r, Predicate p) LINQ_RETURNS(r | linq::first(p, typename boost::range_value<Range>::type()));
+};
+}
+namespace {
+range_extension<detail::first_or_default_t> first_or_default = {};
+}
 
 //
 // group_by
