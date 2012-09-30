@@ -370,7 +370,7 @@ struct range_extension
 // set_filter_iterator
 //
 namespace detail {
-
+// TODO: Add support for an equality selector
 template <class Predicate, class Iterator>
 struct set_filter_iterator
 : boost::iterator_adaptor<set_filter_iterator<Predicate, Iterator, Iterator, boost::use_default, boost::forward_traversal_tag>
@@ -386,6 +386,13 @@ struct set_filter_iterator
     typedef boost::iterator_adaptor<set_filter_iterator<Predicate, Iterator, Iterator, boost::use_default, boost::forward_traversal_tag> super_t;
 
     set_filter_iterator() { }
+
+    template<class Range>
+    set_filter_iterator(Range && r, Predicate f, Iterator x, Iterator l = Iterator())
+        : super_t(x), predicate(f), last(l), set(boost::begin(r), boost::end(r))
+    {
+        satisfy_predicate();
+    }
 
     set_filter_iterator(Predicate f, Iterator x, Iterator l = Iterator())
         : super_t(x), predicate(f), last(l)
@@ -433,13 +440,25 @@ template<class Iterator, class Predicate>
 auto make_set_filter_iterator(Iterator it, Iterator last, Predicate p) LINQ_RETURNS
 (set_filter_iterator<Predicate, Iterator>(p, it, last));
 
+template<class Range, class Iterator, class Predicate>
+auto make_set_filter_iterator(Range && r, Iterator it, Iterator last, Predicate p) LINQ_RETURNS
+(set_filter_iterator<Predicate, Iterator>(r, p, it, last));
+
 template<class Range, class Predicate>
 auto make_set_filter_range(Range && r, Predicate p) LINQ_RETURNS
 (boost::make_iterator_range
 (
 make_set_filter_iterator(boost::begin(r), boost::end(r), p),
 make_set_filter_iterator(boost::end(r), p)
-)) 
+));
+
+template<class Set, class Range, class Predicate>
+auto make_set_filter_range(Set && s, Range && r, Predicate p) LINQ_RETURNS
+(boost::make_iterator_range
+(
+make_set_filter_iterator(s, boost::begin(r), boost::end(r), p),
+make_set_filter_iterator(boost::end(r), p)
+));
 
 }
 
@@ -721,14 +740,45 @@ range_extension<detail::element_at_t> element_at = {};
 }
 
 //
-// except
+// empty_range
 //
 
+//
+// except
+//
+namespace detail {
+struct except_t
+{
+    struct predicate
+    {
+
+        template<class T, class Set>
+        bool operator()(const T& x, Set & s) const
+        {
+            if (s.find(x) != s.end())
+            {
+                s.insert(x);
+                return true;
+            }
+            else return false;
+        }
+    };
+    // TODO: Add support for an equality selector
+    template<class Range1, class Range2>
+    auto operator()(Range1 && r1, Range2 && r2) LINQ_RETURNS
+    (make_set_filter_range(r2, r1, predicate()));
+
+};
+}
+namespace {
+range_extension<detail::except_t> except = {};
+}
 
 
 //
 // first
 //
+
 
 //
 // first_or_default
