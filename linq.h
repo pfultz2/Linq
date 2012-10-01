@@ -775,7 +775,7 @@ struct except_t
         template<class T, class Set>
         bool operator()(const T& x, Set & s) const
         {
-            if (s.find(x) != s.end())
+            if (s.find(x) == s.end())
             {
                 s.insert(x);
                 return true;
@@ -886,7 +886,7 @@ struct group_by_t
     // TODO: Custom comparer overloads can't be supported right now, 
     // because we can't detect the difference between a comparer and 
     // a selector in msvc
-    
+
     // template<class Range, class KeySelector, class KeyCompare>
     // auto operator()(Range && r, KeySelector ks, KeyCompare kc) LINQ_RETURNS
     // (make_map(r | linq::select(make_map_selector(ks)), kc));
@@ -907,6 +907,33 @@ range_extension<detail::group_by_t> group_by = {};
 //
 // intersect
 //
+namespace detail {
+struct intersect_t
+{
+    struct predicate
+    {
+
+        template<class T, class Set>
+        bool operator()(const T& x, Set & s) const
+        {
+            auto it = s.find(x);
+            if (it != s.end())
+            {
+                s.erase(it);
+                return true;
+            }
+            else return false;
+        }
+    };
+    // TODO: Add support for an equality selector
+    template<class Range1, class Range2>
+    auto operator()(Range1 && r1, Range2 && r2) LINQ_RETURNS
+    (make_set_filter_range(r2, r1, predicate()));
+};
+}
+namespace {
+range_extension<detail::intersect_t> intersect = {};
+}
 
 //
 // join
