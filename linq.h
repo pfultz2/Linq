@@ -914,6 +914,34 @@ range_extension<detail::first_or_default_t> first_or_default = {};
 //
 // to_container
 //
+namespace detail {
+struct to_container_t
+{
+
+    template<class Range>
+    struct converter
+    {
+        Range r;
+
+        template<class R>
+        converter(R && x) : r(std::forward<R&&>(x))
+        {}
+
+        template<class C>
+        operator C() const
+        {
+            return C(boost::begin(r), boost::end(r));
+        }
+    };
+
+    template<class Range>
+    auto operator()(Range && r) LINQ_RETURNS
+    (converter<Range&&>(std::forward<Range>(r)));
+};
+}
+namespace {
+range_extension<detail::to_container_t> to_container = {};
+}
 
 //
 // to_string
