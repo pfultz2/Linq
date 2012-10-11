@@ -8,6 +8,8 @@
 #ifndef LINQ_GUARD_EXTENSIONS_MIN_H
 #define LINQ_GUARD_EXTENSIONS_MIN_H
 
+#include <linq/extensions/extension.h>
+
 namespace linq { 
 
 

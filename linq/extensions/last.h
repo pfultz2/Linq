@@ -8,6 +8,8 @@
 #ifndef LINQ_GUARD_EXTENSIONS_LAST_H
 #define LINQ_GUARD_EXTENSIONS_LAST_H
 
+#include <linq/extensions/extension.h>
+
 namespace linq { 
 
 

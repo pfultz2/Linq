@@ -8,6 +8,8 @@
 #ifndef LINQ_GUARD_EXTENSIONS_DISTINCT_H
 #define LINQ_GUARD_EXTENSIONS_DISTINCT_H
 
+#include <linq/extensions/extension.h>
+
 namespace linq { 
 
 //

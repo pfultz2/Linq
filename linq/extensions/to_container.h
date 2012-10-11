@@ -8,6 +8,8 @@
 #ifndef LINQ_GUARD_EXTENSIONS_TO_CONTAINER_H
 #define LINQ_GUARD_EXTENSIONS_TO_CONTAINER_H
 
+#include <linq/extensions/extension.h>
+
 namespace linq { 
 
 //

@@ -8,6 +8,8 @@
 #ifndef LINQ_GUARD_EXTENSIONS_SEQUENCE_EQUAL_H
 #define LINQ_GUARD_EXTENSIONS_SEQUENCE_EQUAL_H
 
+#include <linq/extensions/extension.h>
+
 namespace linq { 
 
 

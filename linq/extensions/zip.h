@@ -8,6 +8,8 @@
 #ifndef LINQ_GUARD_EXTENSIONS_ZIP_H
 #define LINQ_GUARD_EXTENSIONS_ZIP_H
 
+#include <linq/extensions/extension.h>
+
 namespace linq { 
 
 

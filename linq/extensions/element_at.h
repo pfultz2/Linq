@@ -8,6 +8,8 @@
 #ifndef LINQ_GUARD_EXTENSIONS_ELEMENT_AT_H
 #define LINQ_GUARD_EXTENSIONS_ELEMENT_AT_H
 
+#include <linq/extensions/extension.h>
+
 namespace linq { 
 
 //

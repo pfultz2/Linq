@@ -8,6 +8,8 @@
 #ifndef LINQ_GUARD_EXTENSIONS_SELECT_MANY_H
 #define LINQ_GUARD_EXTENSIONS_SELECT_MANY_H
 
+#include <linq/extensions/extension.h>
+
 namespace linq { 
 
 // bind_iterator

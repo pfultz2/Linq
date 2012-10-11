@@ -8,6 +8,8 @@
 #ifndef LINQ_GUARD_EXTENSIONS_MAX_H
 #define LINQ_GUARD_EXTENSIONS_MAX_H
 
+#include <linq/extensions/extension.h>
+
 namespace linq { 
 
 

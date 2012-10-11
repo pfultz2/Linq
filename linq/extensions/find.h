@@ -8,6 +8,8 @@
 #ifndef LINQ_GUARD_EXTENSIONS_FIND_H
 #define LINQ_GUARD_EXTENSIONS_FIND_H
 
+#include <linq/extensions/extension.h>
+
 namespace linq { 
 
 //
