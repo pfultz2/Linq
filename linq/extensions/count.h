@@ -9,6 +9,8 @@
 #define LINQ_GUARD_EXTENSIONS_COUNT_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/always.h>
+#include <linq/extensions/detail/function_object.h>
 
 namespace linq { 
 
@@ -22,13 +24,13 @@ struct count_t
     template<class Range>
     long operator()(Range && r)
     {
-        return std::count_if(boost::begin(r), boost::end(r), [](decltype(*boost::begin(r))) {return true;});
+        return std::count_if(boost::begin(r), boost::end(r), detail::always());
     }
 
     template<class Range, class Pred>
     long operator()(Range && r, Pred p)
     {
-        return std::count_if(boost::begin(r), boost::end(r), p);
+        return std::count_if(boost::begin(r), boost::end(r), linq::make_function_object(p));
     }
 };
 }

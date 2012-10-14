@@ -8,6 +8,11 @@
 #ifndef LINQ_GUARD_DETAIL_SET_FILTER_ITERATOR_H
 #define LINQ_GUARD_DETAIL_SET_FILTER_ITERATOR_H
 
+#include <boost/iterator_adaptors.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/range.hpp>
+#include <linq/utility.h>
+
 namespace linq { 
 
 //
@@ -17,35 +22,35 @@ namespace detail {
 // TODO: Add support for an equality selector
 template <class Predicate, class Iterator>
 struct set_filter_iterator
-: boost::iterator_adaptor<set_filter_iterator<Predicate, Iterator, Iterator, boost::use_default, boost::forward_traversal_tag>
+: boost::iterator_adaptor<set_filter_iterator<Predicate, Iterator>, Iterator, boost::use_default, boost::forward_traversal_tag>
 {
 
     // Probably should be the initial base class so it can be
     // optimized away via EBO if it is an empty class.
-    Predicate predicate;
+    Predicate p;
     Iterator last;
     typedef boost::unordered_set<typename boost::iterator_value<Iterator>::type> set_t;
     set_t set;
 
-    typedef boost::iterator_adaptor<set_filter_iterator<Predicate, Iterator, Iterator, boost::use_default, boost::forward_traversal_tag> super_t;
+    typedef boost::iterator_adaptor<set_filter_iterator<Predicate, Iterator>, Iterator, boost::use_default, boost::forward_traversal_tag> super_t;
 
     set_filter_iterator() { }
 
     template<class Range>
     set_filter_iterator(Range && r, Predicate f, Iterator x, Iterator l = Iterator())
-        : super_t(x), predicate(f), last(l), set(boost::begin(r), boost::end(r))
+        : super_t(x), p(f), last(l), set(boost::begin(r), boost::end(r))
     {
         satisfy_predicate();
     }
 
     set_filter_iterator(Predicate f, Iterator x, Iterator l = Iterator())
-        : super_t(x), predicate(f), last(l)
+        : super_t(x), p(f), last(l)
     {
         satisfy_predicate();
     }
 
     set_filter_iterator(Iterator x, Iterator l = Iterator())
-      : super_t(x), predicate(), last(l)
+      : super_t(x), p(), last(l)
     {
         satisfy_predicate();
     }
@@ -57,7 +62,7 @@ struct set_filter_iterator
     //     )
     //     : super_t(t.base()), predicate(t.predicate()), last(t.end()) {}
 
-    Predicate predicate() const { return predicate; }
+    Predicate predicate() const { return p; }
 
     Iterator end() const { return last; }
 

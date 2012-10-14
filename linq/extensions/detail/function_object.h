@@ -8,6 +8,10 @@
 #ifndef LINQ_GUARD_DETAIL_FUNCTION_OBJECT_H
 #define LINQ_GUARD_DETAIL_FUNCTION_OBJECT_H
 
+#include <linq/utility.h>
+#include <boost/optional.hpp>
+#include <utility>
+
 namespace linq { 
 
 // Lambdas aren't very nice, so we use this wrapper to make them play nicer. This

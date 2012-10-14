@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_CONTAINS_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/find.h>
 
 namespace linq { 
 

@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_AGGREGATE_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/function_object.h>
 
 namespace linq { 
 
@@ -23,10 +24,10 @@ struct aggregate_t
     auto operator()(Range && r, Reducer reducer) LINQ_RETURNS(std::accumulate(++boost::begin(r), boost::end(r), *boost::begin(r)));
 
     template<class Range, class Seed, class Reducer>
-    auto operator()(Range && r, Seed && s, Reducer reducer) LINQ_RETURNS(std::accumulate(boost::begin(r), boost::end(r), s, reducer));
+    auto operator()(Range && r, Seed && s, Reducer reducer) LINQ_RETURNS(std::accumulate(boost::begin(r), boost::end(r), s, linq::make_function_object(reducer)));
 
     template<class Range, class Seed, class Reducer>
-    auto operator()(Range && r, Seed && s, Reducer reducer, Selector sel) LINQ_RETURNS(sel(std::accumulate(boost::begin(r), boost::end(r), s, reducer)));
+    auto operator()(Range && r, Seed && s, Reducer reducer, Selector sel) LINQ_RETURNS(sel(std::accumulate(boost::begin(r), boost::end(r), s, linq::make_function_object(reducer))));
 };
 }
 namespace {

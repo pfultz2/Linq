@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_ANY_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/function_object.h>
 
 namespace linq { 
 
@@ -22,7 +23,7 @@ struct any_t
     auto operator()(Range && r) LINQ_RETURNS(!boost::empty(r))
 
     template<class Range, class Pred>
-    auto operator()(Range && r, Pred p) LINQ_RETURNS(std::any_of(boost::begin(r), boost::end(r), pred));
+    auto operator()(Range && r, Pred p) LINQ_RETURNS(std::any_of(boost::begin(r), boost::end(r), linq::make_function_object(pred)));
 };
 }
 namespace {
