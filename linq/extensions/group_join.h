@@ -9,6 +9,14 @@
 #define LINQ_GUARD_EXTENSIONS_GROUP_JOIN_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/select.h>
+#include <linq/extensions/values.h>
+#include <linq/extensions/detail/identity.h>
+#include <linq/extensions/detail/make_map.h>
+#include <linq/extensions/detail/placeholders.h>
+#include <linq/utility.h>
+#include <boost/range.hpp>
+#include <functional>
 
 namespace linq { 
 
@@ -17,56 +25,35 @@ namespace linq {
 //
 namespace detail {
 
-template<class InnerKeySelector>
 struct join_inner_selector
 {
-    InnerKeySelector is;
 
-    join_inner_selector(InnerKeySelector is) : is(is)
-    {}
-
-    template<class T>
-    auto operator()(T && x) LINQ_RETURNS(std::make_pair(is(std::forward<T>(x), std::forward<T>(x)));
+    template<class InnerKeySelector, class T>
+    auto operator()(InnerKeySelector && is, T && x) const LINQ_RETURNS
+    (
+        std::make_pair( is(std::forward<T>(x)), std::forward<T>(x) )
+    );
 };
 
-template<class InnerKeySelector>
-auto make_join_inner_selector(InnerKeySelector is) LINQ_RETURNS(join_inner_selector<InnerKeySelector>(is));
 
-template<class Value, class OuterKeySelector, class ResultKeySelector>
 struct join_selector
 {
-    typedef decltype(linq::declval<OuterKeySelector>()(linq::declval<Value>())) key_t;
-    boost::unordered_map<key_t, Value> inner_lookup;
-    ResultKeySelector rs;
-    OuterKeySelector os;
 
-    template<class Range>
-    join_selector(Range && r, OuterKeySelector os, ResultKeySelector rs)
-    : inner_lookup(boost::begin(r), boost::end(r)), rs(rs), os(os)
-    {}
-
-    template<class Key>
-    auto create_pair(Key && x) LINQ_RETURNS
+    template<class Lookup, class Key>
+    auto create_pair(Lookup && inner_lookup, Key && x) const LINQ_RETURNS
     (
-        std::make_pair(std::forward<T>(x), inner_lookup.equal_range(std::forward<T>(x)) | boost::adaptors::map_values)
+        std::make_pair(std::forward<Key>(x), inner_lookup.equal_range(std::forward<Key>(x)) | linq::values)
     );
 
-    template<class T>
-    auto operator()(T && x) LINQ_RETURNS
+    template<class Lookup, class OuterKeySelector, class ResultKeySelector, class T>
+    auto operator()(Lookup && inner_lookup, OuterKeySelector os, ResultKeySelector rs, T && x) const LINQ_RETURNS
     (
         rs
         ( 
-            create_pair(os(std::forward<T>(x))) 
+            create_pair(std::forward<Lookup>(inner_lookup), os(std::forward<T>(x))) 
         )
     );
 };
-
-template<class Range, class OuterKeySelector, class ResultKeySelector>
-static auto make_join_selector(Range && r, OuterKeySelector os, ResultKeySelector rs) LINQ_RETURNS
-(join_selector<typename boost::range_value<R>, OuterKeySelector, ResultKeySelector >
-(
-    r, os, rs
-));
 
 struct group_join_t
 {
@@ -75,7 +62,14 @@ struct group_join_t
     (
         outer | linq::select
         (
-            make_join_selector(inner | linq::select(make_join_inner_selector(is)), outer_key_selector, result_selector)
+            std::bind
+            (
+                join_selector(), 
+                make_map(inner | linq::select(std::bind(join_inner_selector(), inner_key_selector, _1))), 
+                outer_key_selector, 
+                result_selector, 
+                _1
+            )
         )
     );
 };

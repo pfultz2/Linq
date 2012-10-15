@@ -9,6 +9,7 @@
 #define INCLUDE_GUARD_LINQ_UTILITY_H
 
 #include <utility>
+#include <boost/utility/enable_if.hpp>
 
 //
 // LINQ_RETURNS for auto return type deduction.

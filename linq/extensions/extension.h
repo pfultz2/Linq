@@ -9,6 +9,10 @@
 #define LINQ_GUARD_EXTENSIONS_EXTENSION_H
 
 #include <linq/pp.h>
+#include <linq/utility.h>
+#include <linq/traits.h>
+#include <utility>
+#include <functional>
 
 namespace linq { 
 
@@ -27,8 +31,8 @@ struct pipe_closure {};
 #define LINQ_PIPE_CLOSURE_MEMBERS_OP(z, n, data) T ## n x ## n;
 #define LINQ_PIPE_CLOSURE_CONSTRUCTOR_OP(z, n, data) x ## n(std::forward<X ## n>(x ## n))
 #define LINQ_PIPE_CLOSURE(z, n, data) \
-template<class F, BOOST_PP_ENUM_PARAMS_Z(z, n, T), BOOST_PP_ENUM_PARAMS_Z(z, BOOST_PP_SUB(LINQ_LIMIT_EXTENSION,n), na BOOST_PP_INTERCEPT)> \
-struct pipe_closure \
+template<class F, BOOST_PP_ENUM_PARAMS_Z(z, n, class T)> \
+struct pipe_closure<F, BOOST_PP_ENUM_PARAMS_Z(z, n, T), BOOST_PP_ENUM_PARAMS_Z(z, BOOST_PP_SUB(LINQ_LIMIT_EXTENSION,n), na BOOST_PP_INTERCEPT)> \
 { \
     BOOST_PP_REPEAT_ ## z(n, LINQ_PIPE_CLOSURE_MEMBERS_OP, ~) \
     template<LINQ_PARAMS(n, class X)>\
@@ -38,7 +42,7 @@ struct pipe_closure \
     \
     template<class Range> \
     friend auto operator|(Range && r, pipe_closure p) LINQ_RETURN_REQUIRES(is_range<Range>) \
-    (F()(std::forward<Range>(r), LINQ_FORWARD_PARAMS(n, T, x) )) \
+    (F()(std::forward<Range>(r), LINQ_FORWARD_PARAMS(n, T, p.x) )) \
 \
 };
 BOOST_PP_REPEAT_FROM_TO_1(1, LINQ_LIMIT_EXTENSION, LINQ_PIPE_CLOSURE, ~)
@@ -54,17 +58,17 @@ BOOST_PP_REPEAT_FROM_TO_1(1, LINQ_LIMIT_EXTENSION, LINQ_PIPE_CLOSURE, ~)
 template<class F>
 struct range_extension
 {
-    BOOST_PP_REPEAT_1(LINQ_LIMIT_EXTENSION, LINQ_RANGE_EXTENSION_OP, ~)
+    BOOST_PP_REPEAT_FROM_TO_1(1, LINQ_LIMIT_EXTENSION, LINQ_RANGE_EXTENSION_OP, ~)
     template<class Range>
     friend auto operator|(Range && r, range_extension) LINQ_RETURN_REQUIRES(is_range<Range>)
     (F()(std::forward<Range>(r)))
 
-    range_extension<F>& operator()
+    range_extension<F>& operator()()
     {
         return *this;
     }
 
-    const range_extension<F>& operator() const
+    const range_extension<F>& operator()() const
     {
         return *this;
     }

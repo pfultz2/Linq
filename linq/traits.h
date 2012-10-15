@@ -8,6 +8,12 @@
 #ifndef INCLUDE_GUARD_LINQ_TRAITS_H
 #define INCLUDE_GUARD_LINQ_TRAITS_H
 
+#include <boost/type_traits.hpp>
+#include <boost/mpl/has_xxx.hpp>
+#include <boost/utility.hpp>
+#include  <boost/range/has_range_iterator.hpp> 
+
+
 namespace linq {
 
 //

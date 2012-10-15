@@ -1,26 +1,19 @@
 /*=============================================================================
     Copyright (c) 2012 Paul Fultz II
-    identity.h
+    placeholders.h
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#ifndef LINQ_GUARD_DETAIL_IDENTITY_H
-#define LINQ_GUARD_DETAIL_IDENTITY_H
+#ifndef LINQ_GUARD_DETAIL_PLACEHOLDERS_H
+#define LINQ_GUARD_DETAIL_PLACEHOLDERS_H
 
-#include <linq/utility.h>
-#include <utility>
+#include <functional>
 
 namespace linq { 
 
-namespace detail {
+using namespace std::placeholders;
 
-struct identity_selector
-{
-    template<class T>
-    auto operator()(T&& x) LINQ_RETURNS(std::forward<T>(x));
-};
-}
 }
 
 #endif

@@ -9,6 +9,9 @@
 #define LINQ_GUARD_EXTENSIONS_SELECT_H
 
 #include <linq/extensions/extension.h>
+#include <boost/iterator/transform_iterator.hpp>
+#include <boost/range.hpp>
+#include <linq/utility.h>
 
 namespace linq { 
 

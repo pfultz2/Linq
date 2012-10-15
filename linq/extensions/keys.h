@@ -9,9 +9,27 @@
 #define LINQ_GUARD_EXTENSIONS_KEYS_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/select.h>
+#include <linq/utility.h>
 
 namespace linq { 
+namespace detail {
+struct keys_t
+{
+    struct key_selector
+    {
+        template<class T>
+        auto operator()(T && x) LINQ_RETURNS(x.first);
+    };
 
+    template<class Range>
+    auto operator()(Range && r) LINQ_RETURNS(r | linq::select(key_selector()));
+
+};
+}
+namespace {
+range_extension<detail::keys_t> keys = {};
+}
 
 }
 
