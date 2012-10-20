@@ -9,6 +9,9 @@
 #define LINQ_GUARD_EXTENSIONS_FIRST_OR_DEFAULT_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/always.h>
+#include <linq/extensions/first.h>
+#include <boost/range.hpp>
 
 namespace linq { 
 

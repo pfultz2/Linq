@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_FIRST_H
 
 #include <linq/extensions/extension.h>
+#include <boost/range.hpp>
 
 namespace linq { 
 
@@ -19,7 +20,7 @@ namespace detail {
 struct first_t
 {
     template<class Iterator, class Predicate, class Value>
-    static boost::iterator_value<Iterator>::type first_it(Iterator first, Iterator last, Predicate p, Value && v)
+    static typename boost::iterator_value<Iterator>::type first_it(Iterator first, Iterator last, Predicate p, Value && v)
     {
         auto it = std::find_if(first, last, p);
         if (it == last) return v;
