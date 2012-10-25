@@ -9,9 +9,21 @@
 #define LINQ_GUARD_EXTENSIONS_REVERSE_H
 
 #include <linq/extensions/extension.h>
+#include <linq/utility.h>
+#include <boost/range.hpp>
 
 namespace linq { 
 
+namespace detail {
+struct reverse_t
+{
+    template<class Range>
+    auto operator()(Range && r) const LINQ_RETURNS(boost::reverse(r));
+};
+}
+namespace {
+range_extension<detail::reverse_t> reverse = {};
+}
 
 }
 
