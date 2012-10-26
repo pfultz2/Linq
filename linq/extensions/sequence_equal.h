@@ -9,9 +9,34 @@
 #define LINQ_GUARD_EXTENSIONS_SEQUENCE_EQUAL_H
 
 #include <linq/extensions/extension.h>
+#include <linq/utility.h>
+#include <boost/range.hpp>
 
 namespace linq { 
+namespace detail {
 
+template <class InputIterator1, class InputIterator2>
+bool equal ( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2 )
+{
+  while ( first1!=last1 )
+  {
+    if (first2 == last2) return false;
+    if (!(*first1 == *first2))   // or: if (!pred(*first1,*first2)), for pred version
+      return false;
+    ++first1; ++first2;
+  }
+  return true;
+}
+struct sequence_equal_t
+{
+    template<class R1, class R2>
+    bool operator()(R1 && r1, R2 && r2) LINQ_RETURNS
+    (equal(boost::begin(r1), boost::end(r1), boost::begin(r2), boost::end(r2)));
+};
+}
+namespace {
+range_extension<detail::sequence_equal_t> sequence_equal = {};
+}
 
 }
 
