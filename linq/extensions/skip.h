@@ -9,9 +9,19 @@
 #define LINQ_GUARD_EXTENSIONS_SKIP_H
 
 #include <linq/extensions/extension.h>
+#include <boost/range.hpp>
 
 namespace linq { 
-
+namespace detail {
+struct skip_t
+{
+    template<class Range>
+    auto operator()(Range && r, long count) LINQ_RETURNS(boost::make_iterator_range(boost::next(boost::begin(r)), boost::end(r)));
+};
+}
+namespace {
+range_extension<detail::skip_t> skip = {};
+}
 
 }
 
