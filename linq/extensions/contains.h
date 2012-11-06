@@ -10,6 +10,7 @@
 
 #include <linq/extensions/extension.h>
 #include <linq/extensions/find.h>
+#include <boost/range.hpp>
 
 namespace linq { 
 

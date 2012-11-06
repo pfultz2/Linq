@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_SELECT_MANY_H
 
 #include <linq/extensions/extension.h>
+#include <boost/range.hpp>
 
 namespace linq { 
 

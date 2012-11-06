@@ -9,6 +9,8 @@
 #define LINQ_GUARD_EXTENSIONS_CONCAT_H
 
 #include <linq/extensions/extension.h>
+#include <boost/range.hpp>
+#include <boost/range/join.hpp>
 
 namespace linq { 
 

@@ -9,6 +9,8 @@
 #define LINQ_GUARD_EXTENSIONS_ELEMENT_AT_H
 
 #include <linq/extensions/extension.h>
+#include <boost/range.hpp>
+
 
 namespace linq { 
 

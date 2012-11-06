@@ -11,6 +11,7 @@
 #include <linq/extensions/extension.h>
 #include <linq/extensions/detail/always.h>
 #include <linq/extensions/detail/function_object.h>
+#include <boost/range.hpp>
 
 namespace linq { 
 

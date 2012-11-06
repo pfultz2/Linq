@@ -9,6 +9,9 @@
 #define LINQ_GUARD_EXTENSIONS_DEFAULT_IF_EMPTY_H
 
 #include <linq/extensions/extension.h>
+#include <boost/range.hpp>
+#include <boost/optional.hpp>
+#include <boost/iterator/iterator_traits.hpp>
 
 
 namespace linq { 
@@ -20,7 +23,7 @@ namespace detail {
 
 template<class Iterator, class Value=typename boost::iterator_value<Iterator>::type>
 struct default_if_empty_iterator
-: boost::iterator_facade<default_if_empty_iterator, Value, boost::forward_traversal_tag>
+: boost::iterator_facade<default_if_empty_iterator<Iterator, Value>, Value, boost::forward_traversal_tag>
 {
     const bool empty;
     Iterator it;

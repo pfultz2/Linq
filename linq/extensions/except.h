@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_EXCEPT_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/set_filter_iterator.h>
 
 namespace linq { 
 
