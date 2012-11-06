@@ -9,9 +9,20 @@
 #define LINQ_GUARD_EXTENSIONS_SKIP_WHILE_H
 
 #include <linq/extensions/extension.h>
+#include <boost/range.hpp>
+#include <boost/range/algorithm/find_if.hpp>
 
 namespace linq { 
-
+namespace detail {
+struct skip_while_t
+{
+    template<class Range, class Predicate>
+    auto operator()(Range && r, Predicate p) LINQ_RETURNS(boost::make_reverse_iterator(boost::find_if(r, p). boost::end(r)));
+};
+}
+namespace {
+range_extension<detail::skip_while_t> skip_while = {};
+}
 
 }
 
