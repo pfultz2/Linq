@@ -9,9 +9,23 @@
 #define LINQ_GUARD_EXTENSIONS_SINGLE_OR_DEFAULT_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/is_single.h>
+#include <exception>
 
 namespace linq { 
-
+namespace detail {
+struct single_or_default_t
+{
+    template<class Range, class T>
+    auto operator()(Range && r, T && x) const LINQ_RETURNS
+    (
+        is_single(r) ? *boost::begin(r) : x
+    )
+};
+}
+namespace {
+range_extension<detail::single_or_default_t> single_or_default = {};
+}
 
 }
 

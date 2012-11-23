@@ -9,9 +9,23 @@
 #define LINQ_GUARD_EXTENSIONS_SINGLE_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/is_single.h>
+#include <exception>
 
 namespace linq { 
-
+namespace detail {
+struct single_t
+{
+    template<class Range>
+    auto operator()(Range && r) const LINQ_RETURNS
+    (
+        is_single(r) ? *boost::begin(r) : throw std::out_of_range("Is not a single range")
+    )
+};
+}
+namespace {
+range_extension<detail::single_t> single = {};
+}
 
 }
 
