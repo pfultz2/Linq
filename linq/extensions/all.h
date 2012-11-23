@@ -21,7 +21,7 @@ namespace detail {
 struct all_t
 {
     template<class Range, class Pred>
-    auto operator()(Range && r, Pred p) LINQ_RETURNS(std::all_of(boost::begin(r), boost::end(r), linq::make_function_object(p)));
+    auto operator()(Range && r, Pred p) const LINQ_RETURNS(std::all_of(boost::begin(r), boost::end(r), linq::make_function_object(p)));
 };
 }
 namespace {

@@ -28,11 +28,11 @@ struct first_t
     }
 
     template<class Range, class Predicate, class Value>
-    auto operator()(Range && r, Predicate p, Value && v) LINQ_RETURNS
+    auto operator()(Range && r, Predicate p, Value && v) const LINQ_RETURNS
     (first_it(boost::begin(r), boost::end(r), p, std::forward<Value>(v)));
 
     template<class Range>
-    auto operator()(Range && r) LINQ_RETURNS(*(boost::begin(r)));
+    auto operator()(Range && r) const LINQ_RETURNS(*(boost::begin(r)));
 
 };
 }

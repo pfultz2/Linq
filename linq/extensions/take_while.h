@@ -25,7 +25,7 @@ struct not_predicate
 struct take_while_t
 {
     template<class Range, class Predicate>
-    auto operator()(Range && r, Predicate p) 
+    auto operator()(Range && r, Predicate p) const
     LINQ_RETURNS(boost::make_reverse_iterator(boost::begin(r), boost::find_if(r, std::bind(not_predicate(), p, _1))));
 };
 }

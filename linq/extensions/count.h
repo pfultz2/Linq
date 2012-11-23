@@ -23,13 +23,13 @@ struct count_t
 {
     // TODO: add overload for random access ranges
     template<class Range>
-    long operator()(Range && r)
+    long operator()(Range && r) const
     {
         return std::count_if(boost::begin(r), boost::end(r), detail::always());
     }
 
     template<class Range, class Pred>
-    long operator()(Range && r, Pred p)
+    long operator()(Range && r, Pred p) const
     {
         return std::count_if(boost::begin(r), boost::end(r), linq::make_function_object(p));
     }

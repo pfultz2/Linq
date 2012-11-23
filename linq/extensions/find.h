@@ -25,7 +25,7 @@ auto find(Range && r, T && x) LINQ_RETURNS(std::find(boost::begin(r), boost::end
 struct find_t
 {
     template<class Range, class T>
-    auto operator()(Range && r, T && x) 
+    auto operator()(Range && r, T && x) const
     LINQ_RETURNS(find(std::forward<Range>(r), std::forward<T>(x)));
 };
 }

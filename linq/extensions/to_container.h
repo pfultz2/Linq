@@ -37,7 +37,7 @@ struct to_container_t
     };
 
     template<class Range>
-    auto operator()(Range && r) LINQ_RETURNS
+    auto operator()(Range && r) const LINQ_RETURNS
     (converter<Range&&>(std::forward<Range>(r)));
 };
 }

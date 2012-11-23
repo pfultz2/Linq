@@ -21,7 +21,7 @@ namespace detail {
 struct concat_t
 {
     template<class Range1, class Range2>
-    auto operator()(Range1 && r1, Range2 && r2) LINQ_RETURNS(boost::join(r1, r2));
+    auto operator()(Range1 && r1, Range2 && r2) const LINQ_RETURNS(boost::join(r1, r2));
 };
 }
 namespace {

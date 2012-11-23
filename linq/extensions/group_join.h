@@ -58,7 +58,7 @@ struct join_selector
 struct group_join_t
 {
     template<class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>
-    auto operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector result_selector) LINQ_RETURNS
+    auto operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector result_selector) const LINQ_RETURNS
     (
         outer | linq::select
         (

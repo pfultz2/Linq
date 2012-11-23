@@ -22,10 +22,10 @@ namespace detail {
 struct first_or_default_t
 {
     template<class Range>
-    auto operator()(Range && r) LINQ_RETURNS(r | linq::first(always(), typename boost::range_value<Range>::type()));
+    auto operator()(Range && r) const LINQ_RETURNS(r | linq::first(always(), typename boost::range_value<Range>::type()));
 
     template<class Range, class Predicate>
-    auto operator()(Range && r, Predicate p) LINQ_RETURNS(r | linq::first(p, typename boost::range_value<Range>::type()));
+    auto operator()(Range && r, Predicate p) const LINQ_RETURNS(r | linq::first(p, typename boost::range_value<Range>::type()));
 };
 }
 namespace {

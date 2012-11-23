@@ -35,7 +35,7 @@ struct intersect_t
     };
     // TODO: Add support for an equality selector
     template<class Range1, class Range2>
-    auto operator()(Range1 && r1, Range2 && r2) LINQ_RETURNS
+    auto operator()(Range1 && r1, Range2 && r2) const LINQ_RETURNS
     (make_set_filter_range(r2, r1, predicate()));
 };
 }

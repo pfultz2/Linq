@@ -73,11 +73,11 @@ auto make_default_if_empty_range(bool empty, Range && r, Value && v) LINQ_RETURN
 struct default_if_empty_t
 {
     template<class Range, class T>
-    auto operator()(Range && r, T && x) LINQ_RETURNS
+    auto operator()(Range && r, T && x) const LINQ_RETURNS
     (make_default_if_empty_range(boost::empty(r), r, x));
 
     template<class Range, class T>
-    auto operator()(Range && r) LINQ_RETURNS
+    auto operator()(Range && r) const LINQ_RETURNS
     (make_default_if_empty_range(boost::empty(r), r, typename boost::range_value<Range>::type()));
 };
 }

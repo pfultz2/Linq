@@ -21,10 +21,10 @@ namespace detail {
 struct any_t
 {
     template<class Range, class Pred>
-    auto operator()(Range && r) LINQ_RETURNS(!boost::empty(r));
+    auto operator()(Range && r) const LINQ_RETURNS(!boost::empty(r));
 
     template<class Range, class Pred>
-    auto operator()(Range && r, Pred p) LINQ_RETURNS(std::any_of(boost::begin(r), boost::end(r), linq::make_function_object(p)));
+    auto operator()(Range && r, Pred p) const LINQ_RETURNS(std::any_of(boost::begin(r), boost::end(r), linq::make_function_object(p)));
 };
 }
 namespace {

@@ -34,7 +34,7 @@ struct group_by_t
     };
 
     template<class Range, class KeySelector>
-    auto operator()(Range && r, KeySelector ks) LINQ_RETURNS
+    auto operator()(Range && r, KeySelector ks) const LINQ_RETURNS
     (
         make_map( r | linq::select(std::bind(map_selector(), ks, identity_selector(), _1)) )
     );
@@ -44,7 +44,7 @@ struct group_by_t
     // a selector in msvc
 
     template<class Range, class KeySelector, class ElementSelector>
-    auto operator()(Range && r, KeySelector ks, ElementSelector es) LINQ_RETURNS
+    auto operator()(Range && r, KeySelector ks, ElementSelector es) const LINQ_RETURNS
     (
         make_map( r | linq::select(std::bind(map_selector(), ks, es, _1)) )
     );

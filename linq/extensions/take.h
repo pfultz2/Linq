@@ -16,7 +16,7 @@ namespace detail {
 struct take_t
 {
     template<class Range>
-    auto operator()(Range && r, long count) LINQ_RETURNS(boost::make_iterator_range(boost::begin(r), boost::next(boost::begin(r))));
+    auto operator()(Range && r, long count) const LINQ_RETURNS(boost::make_iterator_range(boost::begin(r), boost::next(boost::begin(r))));
 };
 }
 namespace {

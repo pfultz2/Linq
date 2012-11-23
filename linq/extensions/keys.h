@@ -19,11 +19,11 @@ struct keys_t
     struct key_selector
     {
         template<class T>
-        auto operator()(T && x) LINQ_RETURNS(x.first);
+        auto operator()(T && x) const LINQ_RETURNS(x.first);
     };
 
     template<class Range>
-    auto operator()(Range && r) LINQ_RETURNS(r | linq::select(key_selector()));
+    auto operator()(Range && r) const LINQ_RETURNS(r | linq::select(key_selector()));
 
 };
 }

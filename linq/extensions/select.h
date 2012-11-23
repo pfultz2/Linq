@@ -28,7 +28,7 @@ struct select_t
     static auto make_transform_iterator(F f, It it) LINQ_RETURNS(boost::transform_iterator<F, It>(it, f));
 
     template<class Range, class Selector>
-    auto operator()(Range && r, Selector selector) 
+    auto operator()(Range && r, Selector selector) const
     LINQ_RETURNS
     (
         boost::make_iterator_range

@@ -91,7 +91,7 @@ namespace detail {
 struct select_many_t
 {
     template<class Range, class Selector>
-    auto operator()(Range && r, Selector s) LINQ_RETURNS(linq::bind_range(std::forward<Range>(r), make_function_object(s)));
+    auto operator()(Range && r, Selector s) const LINQ_RETURNS(linq::bind_range(std::forward<Range>(r), make_function_object(s)));
 };
 }
 namespace {
