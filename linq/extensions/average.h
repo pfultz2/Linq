@@ -9,9 +9,23 @@
 #define LINQ_GUARD_EXTENSIONS_AVERAGE_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/aggregate.h>
+#include <linq/extensions/sum.h>
+#include <boost/range.hpp>
 
 namespace linq { 
+namespace detail {
+struct average_t
+{
 
+    template<class Range>
+    auto operator()(Range&& r) const LINQ_RETURNS
+    ((r | linq::sum) / boost::distance(r)); 
+};
+}
+namespace {
+range_extension<detail::average_t> average = {};
+}
 
 }
 
