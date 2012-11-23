@@ -30,11 +30,11 @@ struct aggregate_t
 
     template<class Range, class Seed, class Reducer>
     auto operator()(Range && r, Seed && s, Reducer reducer) const LINQ_RETURNS
-    (std::accumulate(boost::begin(r), boost::end(r), s, linq::make_function_object(reducer)));
+    (std::accumulate(boost::begin(r), boost::end(r), s, reducer));
 
     template<class Range, class Seed, class Reducer, class Selector>
     auto operator()(Range && r, Seed && s, Reducer reducer, Selector sel) const LINQ_RETURNS
-    (sel(std::accumulate(boost::begin(r), boost::end(r), s, linq::make_function_object(reducer))));
+    (sel(std::accumulate(boost::begin(r), boost::end(r), s, reducer)));
 };
 }
 namespace {
