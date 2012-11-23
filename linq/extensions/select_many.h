@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_SELECT_MANY_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/function_object.h>
 #include <boost/range.hpp>
 
 namespace linq { 
@@ -90,7 +91,7 @@ namespace detail {
 struct select_many_t
 {
     template<class Range, class Selector>
-    auto operator()(Range && r, Selector s) LINQ_RETURNS(linq::bind_range(std::forward<Range>(r), s));
+    auto operator()(Range && r, Selector s) LINQ_RETURNS(linq::bind_range(std::forward<Range>(r), make_function_object(s)));
 };
 }
 namespace {

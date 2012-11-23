@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_WHERE_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/function_object.h>
 #include <boost/iterator/filter_iterator.hpp>
 #include <boost/range.hpp>
 #include <linq/utility.h>
@@ -23,8 +24,8 @@ struct where_t
     (
         boost::make_iterator_range
         (
-            boost::make_filter_iterator(p, boost::begin(r), boost::end(r)), 
-            boost::make_filter_iterator(p, boost::end(r), boost::end(r))
+            boost::make_filter_iterator(make_function_object(p), boost::begin(r), boost::end(r)), 
+            boost::make_filter_iterator(make_function_object(p), boost::end(r), boost::end(r))
         )
     );
 };

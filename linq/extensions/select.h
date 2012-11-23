@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_SELECT_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/function_object.h>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/range.hpp>
 #include <linq/utility.h>
@@ -28,7 +29,14 @@ struct select_t
 
     template<class Range, class Selector>
     auto operator()(Range && r, Selector selector) 
-    LINQ_RETURNS(boost::make_iterator_range(make_transform_iterator(selector, boost::begin(r)), make_transform_iterator(selector, boost::end(r))) );
+    LINQ_RETURNS
+    (
+        boost::make_iterator_range
+        (
+            make_transform_iterator(make_function_object(selector), boost::begin(r)), 
+            make_transform_iterator(make_function_object(selector), boost::end(r))
+        ) 
+    );
 
 };
 }
