@@ -11,6 +11,7 @@
 #include <linq/extensions/extension.h>
 #include <linq/utility.h>
 #include <boost/range.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 
 namespace linq { 
 
@@ -18,7 +19,7 @@ namespace detail {
 struct reverse_t
 {
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS(boost::reverse(r));
+    auto operator()(Range && r) const LINQ_RETURNS(boost::adaptors::reverse(r));
 };
 }
 namespace {
