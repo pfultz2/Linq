@@ -29,7 +29,7 @@ struct order_by_t
 {
     template<class Range, class Selector>
     auto operator()(Range&& r, Selector s) const LINQ_RETURNS
-    (make_ordered_range(boost::begin(r), boost::end(r), std::bind(s, _1, _2)));
+    (make_ordered_range(boost::begin(r), boost::end(r), std::bind(order_selector(), s, _1, _2)));
 };
 }
 namespace {
