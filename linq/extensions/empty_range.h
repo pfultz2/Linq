@@ -12,6 +12,8 @@
 
 namespace linq { 
 
+template<class T>
+auto empty_range() LINQ_RETURNS(boost::iterator_range<T*>(0, 0));
 
 }
 
