@@ -25,34 +25,65 @@ namespace linq {
 namespace detail {
 struct na {};
 
-template<class F, BOOST_PP_ENUM_BINARY_PARAMS_Z(1, LINQ_LIMIT_EXTENSION, class T, = na BOOST_PP_INTERCEPT) >
-struct pipe_closure {};
 
-#define LINQ_PIPE_CLOSURE_MEMBERS_OP(z, n, data) T ## n x ## n;
-#define LINQ_PIPE_CLOSURE_CONSTRUCTOR_OP(z, n, data) x ## n(std::forward<X ## n>(x ## n))
-#define LINQ_PIPE_CLOSURE(z, n, data) \
-template<class F, BOOST_PP_ENUM_PARAMS_Z(z, n, class T)> \
-struct pipe_closure<F, BOOST_PP_ENUM_PARAMS_Z(z, n, T), BOOST_PP_ENUM_PARAMS_Z(z, BOOST_PP_SUB(LINQ_LIMIT_EXTENSION,n), na BOOST_PP_INTERCEPT)> \
-{ \
-    BOOST_PP_REPEAT_ ## z(n, LINQ_PIPE_CLOSURE_MEMBERS_OP, ~) \
-    template<LINQ_PARAMS(n, class X)>\
-    pipe_closure(LINQ_PARAMS(n, X, && BOOST_PP_INTERCEPT, x)) \
-    : BOOST_PP_ENUM_ ## z(n, LINQ_PIPE_CLOSURE_CONSTRUCTOR_OP, ~) \
-    {} \
-    \
-    template<class Range> \
-    friend auto operator|(Range && r, pipe_closure p) LINQ_RETURN_REQUIRES(is_range<Range>) \
-    (F()(std::forward<Range>(r), LINQ_FORWARD_PARAMS(n, T, p.x) )) \
-\
+template<class F>
+struct pipe_closure
+{
+    F f;
+    pipe_closure(F f) : f(f)
+    {};
+
+    template<class F, class Range>
+    friend auto operator|(Range&& r, const pipe_closure& p) LINQ_RETURN_REQUIRES(is_range<Range>)
+    (p.f(r));
 };
-BOOST_PP_REPEAT_FROM_TO_1(1, LINQ_LIMIT_EXTENSION, LINQ_PIPE_CLOSURE, ~)
+
+template<class F>
+pipe_closure<F> make_pipe_closure(F f)
+{
+    return pipe_closure<F>(f);
 }
+
+template<class T>
+struct auto_ref_type
+{
+    typedef T type;
+};
+
+template<class T>
+struct auto_ref_type<T&&>
+: auto_ref_type<T>
+{};
+
+template<class T>
+struct auto_ref_type<T&>
+{
+    typedef std::reference_wrapper<T> type;
+};
+
+template<class T>
+struct auto_ref_type<const T&>
+{
+    typedef std::reference_wrapper<const T> type;
+};
+
+
+template<class T>
+typename detail::auto_ref_type<T>::type auto_ref(T&& x)
+{
+    return typename detail::auto_ref_type<T>::type(std::forward<T>(x));
+}
+
+}
+
+#define LINQ_RANGE_EXTENSION_AUTO_REF(z, n, data) detail::auto_ref(std::forward<T ## n>(x ## n))
+
 #define LINQ_RANGE_EXTENSION_OP(z, n, data) \
-    template<LINQ_PARAMS(n, class T)> \
-    auto operator()(LINQ_PARAMS(n, T, && x) ) const LINQ_RETURNS \
+    template<BOOST_PP_ENUM_PARAMS_Z(z, n, class T)> \
+    auto operator()(BOOST_PP_ENUM_BINARY_PARAMS_Z(z, n, T, && x) ) const LINQ_RETURNS \
     ( \
-        detail::pipe_closure<F, BOOST_PP_ENUM_BINARY_PARAMS_Z(z, n, T, && BOOST_PP_INTERCEPT)> \
-        (LINQ_FORWARD_PARAMS_Z(z, n, T, x) ) \
+        detail::make_pipe_closure \
+        (std::bind(_1, BOOST_PP_ENUM_ ## z(n, LINQ_RANGE_EXTENSION_AUTO_REF, ~) ) \
     ); 
 
 template<class F>
