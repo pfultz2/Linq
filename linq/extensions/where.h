@@ -9,9 +9,29 @@
 #define LINQ_GUARD_EXTENSIONS_WHERE_H
 
 #include <linq/extensions/extension.h>
+#include <boost/iterator/filter_iterator.hpp>
+#include <boost/range.hpp>
+#include <linq/utility.h>
 
 namespace linq { 
 
+namespace detail {
+struct where_t
+{
+    template<class Range, class Predicate>
+    auto operator()(Range && r, Predicate p) const LINQ_RETURNS
+    (
+        boost::make_iterator_range
+        (
+            boost::make_filter_iterator(p, boost::begin(r), boost::end(r)), 
+            boost::make_filter_iterator(p, boost::end(r), boost::end(r))
+        )
+    );
+};
+}
+namespace {
+range_extension<detail::where_t> where = {};
+}
 
 }
 
