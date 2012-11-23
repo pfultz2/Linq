@@ -9,9 +9,30 @@
 #define LINQ_GUARD_EXTENSIONS_MAX_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/aggregate.h>
 
 namespace linq { 
+namespace detail {
 
+struct max_reducer
+{
+    template<class T>
+    T operator()(T x, T y) const
+    {
+        return (x > y) ? x : y;
+    }
+};
+
+struct max_t
+{
+    template<class Range>
+    auto operator()(Range && r) const
+    LINQ_RETURNS(r | linq::aggregate(max_reducer()));
+};
+}
+namespace {
+range_extension<detail::max_t> max = {};
+}
 
 }
 
