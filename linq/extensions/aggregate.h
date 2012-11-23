@@ -13,6 +13,7 @@
 #include <boost/range.hpp>
 
 #include <algorithm>
+#include <numeric>
 
 namespace linq { 
 
@@ -24,13 +25,16 @@ struct aggregate_t
 {
     //TODO: make it work for empty and single ranges
     template<class Range, class Reducer>
-    auto operator()(Range && r, Reducer reducer) const LINQ_RETURNS(std::accumulate(++boost::begin(r), boost::end(r), *boost::begin(r)));
+    auto operator()(Range && r, Reducer reducer) const LINQ_RETURNS
+    (std::accumulate(++boost::begin(r), boost::end(r), *boost::begin(r)));
 
     template<class Range, class Seed, class Reducer>
-    auto operator()(Range && r, Seed && s, Reducer reducer) const LINQ_RETURNS(std::accumulate(boost::begin(r), boost::end(r), s, linq::make_function_object(reducer)));
+    auto operator()(Range && r, Seed && s, Reducer reducer) const LINQ_RETURNS
+    (std::accumulate(boost::begin(r), boost::end(r), s, linq::make_function_object(reducer)));
 
-    template<class Range, class Seed, class Reducer>
-    auto operator()(Range && r, Seed && s, Reducer reducer, Selector sel) const LINQ_RETURNS(sel(std::accumulate(boost::begin(r), boost::end(r), s, linq::make_function_object(reducer))));
+    template<class Range, class Seed, class Reducer, class Selector>
+    auto operator()(Range && r, Seed && s, Reducer reducer, Selector sel) const LINQ_RETURNS
+    (sel(std::accumulate(boost::begin(r), boost::end(r), s, linq::make_function_object(reducer))));
 };
 }
 namespace {
