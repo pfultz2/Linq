@@ -12,6 +12,8 @@
 #include <linq/extensions/detail/function_object.h>
 #include <boost/range.hpp>
 
+#include <algorithm>
+
 namespace linq { 
 
 //
