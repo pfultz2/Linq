@@ -49,6 +49,16 @@ template<class T, class U>
 struct is_range<std::pair<T, U> > : boost::mpl::and_<is_iterator<T>, is_iterator<U>, boost::is_same<T, U> >::type
 {};
 
+template<class T>
+struct is_range<T&>
+: is_range<T>
+{};
+
+template<class T>
+struct is_range<T&&>
+: is_range<T>
+{};
+
 }
 
 #endif
