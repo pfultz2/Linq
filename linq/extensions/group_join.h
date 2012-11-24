@@ -40,7 +40,7 @@ struct join_selector
 {
 
     template<class Lookup, class Key>
-    auto create_pair(Lookup && inner_lookup, Key && x) const LINQ_RETURNS
+    static auto create_pair(Lookup && inner_lookup, Key && x) LINQ_RETURNS
     (
         std::make_pair(std::forward<Key>(x), inner_lookup.equal_range(std::forward<Key>(x)) | linq::values)
     );

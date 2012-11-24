@@ -35,8 +35,11 @@ struct pipe_closure
     {};
 
     template<class Range>
-    friend auto operator|(Range&& r, const pipe_closure& p) LINQ_RETURN_REQUIRES(is_range<Range>)
-    (p.f(r));
+    friend typename std::result_of<F(Range&&)>::type 
+    operator|(Range&& r, const pipe_closure& p)
+    {
+        return p.f(r);
+    }
 };
 
 template<class F>
@@ -84,7 +87,7 @@ typename detail::auto_ref_type<T>::type auto_ref(T&& x)
     auto operator()(BOOST_PP_ENUM_BINARY_PARAMS_Z(z, n, T, && x) ) const LINQ_RETURNS \
     ( \
         detail::make_pipe_closure \
-        (std::bind(_1, BOOST_PP_ENUM_ ## z(n, LINQ_RANGE_EXTENSION_AUTO_REF, ~) ) ) \
+        (std::bind(F(), _1, BOOST_PP_ENUM_ ## z(n, LINQ_RANGE_EXTENSION_AUTO_REF, ~) ) ) \
     ); 
 
 template<class F>
