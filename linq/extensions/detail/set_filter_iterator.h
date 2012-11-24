@@ -74,7 +74,7 @@ struct set_filter_iterator
 
     void satisfy_predicate()
     {
-        while (this->base() != this->last && !this->predicate(*this->base(), this->set))
+        while (this->base() != this->last && !this->predicate()(*this->base(), this->set))
         {
             ++(this->base_reference());
         }
@@ -93,12 +93,14 @@ template<class Range, class Iterator, class Predicate>
 auto make_set_filter_iterator(Range && r, Iterator it, Iterator last, Predicate p) LINQ_RETURNS
 (set_filter_iterator<Predicate, Iterator>(r, p, it, last));
 
+
+
 template<class Range, class Predicate>
 auto make_set_filter_range(Range && r, Predicate p) LINQ_RETURNS
 (boost::make_iterator_range
 (
 make_set_filter_iterator(boost::begin(r), boost::end(r), p),
-make_set_filter_iterator(boost::end(r), p)
+make_set_filter_iterator(boost::end(r), boost::end(r), p)
 ));
 
 template<class Set, class Range, class Predicate>
@@ -106,7 +108,7 @@ auto make_set_filter_range(Set && s, Range && r, Predicate p) LINQ_RETURNS
 (boost::make_iterator_range
 (
 make_set_filter_iterator(s, boost::begin(r), boost::end(r), p),
-make_set_filter_iterator(boost::end(r), p)
+make_set_filter_iterator(boost::end(r), boost::end(r), p)
 ));
 
 }
