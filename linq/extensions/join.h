@@ -13,6 +13,9 @@
 #include <linq/extensions/select_many.h>
 #include <linq/extensions/select.h>
 
+
+#include <linq/utility.h>
+
 namespace linq { 
 namespace detail {
 struct join_t
@@ -22,7 +25,7 @@ struct join_t
         template<class Key, class Value>
         auto operator()(Key && k, Value && v) const LINQ_RETURNS
         (
-            std::make_pair(std::forward<Key>(k), std::forward<Value>(v));
+            std::make_pair(std::forward<Key>(k), std::forward<Value>(v))
         );
     };
     struct join_selector
@@ -30,7 +33,7 @@ struct join_t
         template<class Pair>
         auto operator()(Pair && p) const LINQ_RETURNS
         (
-            p.second | linq::select(std::bind(pair_selector(), p.first, _1));
+            p.second | linq::select(std::bind(pair_selector(), p.first, _1))
         );
     };
     template<class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>

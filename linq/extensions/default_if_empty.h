@@ -51,7 +51,7 @@ struct default_if_empty_iterator
         );
     }
 
-    typename boost::iteraror_reference<Iterator>::type deref() const
+    typename boost::iterator_reference<Iterator>::type deref() const
     {
         if (not empty) return *it;
         else return *v;

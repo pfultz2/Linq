@@ -17,7 +17,7 @@
 namespace linq { 
 namespace detail {
 
-struct then_selector
+struct then_d_selector
 {
     template<class Selector, class Compare, class T>
     bool operator()(Selector&& s, Compare&& c, const T& x, const T& y) const
@@ -31,7 +31,7 @@ struct then_by_descending_t
 {
     template<class Range, class Selector>
     auto operator()(Range&& r, Selector s) const LINQ_RETURNS
-    (make_ordered_range(boost::begin(r), boost::end(r), std::bind(then_selector(), s, r.c, _1, _2)));
+    (make_ordered_range(boost::begin(r), boost::end(r), std::bind(then_d_selector(), s, r.c, _1, _2)));
 };
 }
 namespace {

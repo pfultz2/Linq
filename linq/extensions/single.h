@@ -20,7 +20,7 @@ struct single_t
     auto operator()(Range && r) const LINQ_RETURNS
     (
         is_single(r) ? *boost::begin(r) : throw std::out_of_range("Is not a single range")
-    )
+    );
 };
 }
 namespace {

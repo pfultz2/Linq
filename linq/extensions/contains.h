@@ -11,6 +11,7 @@
 #include <linq/extensions/extension.h>
 #include <linq/extensions/find.h>
 #include <boost/range.hpp>
+#include <linq/utility.h>
 
 namespace linq { 
 
@@ -21,7 +22,8 @@ namespace detail {
 struct contains_t
 {
     template<class Range, class T>
-    auto operator()(Range && r, T && x) const LINQ_RETURNS(return (r | linq::find(x) != boost::end(r)));
+    auto operator()(Range && r, T && x) const LINQ_RETURNS
+    ((r | linq::find(x)) != boost::end(r));
 };
 }
 namespace {

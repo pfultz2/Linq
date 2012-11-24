@@ -36,7 +36,7 @@ struct distinct_t
     };
     // TODO: Add support for an equality selector
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS(make_set_filter_range(r, p));
+    auto operator()(Range && r) const LINQ_RETURNS(make_set_filter_range(r, predicate()));
 };
 }
 namespace {

@@ -20,7 +20,7 @@ struct single_or_default_t
     auto operator()(Range && r, T && x) const LINQ_RETURNS
     (
         is_single(r) ? *boost::begin(r) : x
-    )
+    );
 };
 }
 namespace {
