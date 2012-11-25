@@ -167,15 +167,15 @@ BOOST_AUTO_TEST_CASE( group_by_test )
     (person("Terry", 37))
     (person("Jerry", 22));
 
-    auto query = v | linq::group_by([](person p){ return p.age; }, [](person p) { return p.name; });
-    BOOST_CHECK_EQUAL(1, boost::distance(v.equal_range(25)));
-    BOOST_CHECK_EQUAL(2, boost::distance(v.equal_range(22)));
-    BOOST_CHECK_EQUAL(1, boost::distance(v.equal_range(37)));
+    auto q = v | linq::group_by([](person p){ return p.age; }, [](person p) { return p.name; });
+    BOOST_CHECK_EQUAL(1, boost::distance(q.equal_range(25)));
+    BOOST_CHECK_EQUAL(2, boost::distance(q.equal_range(22)));
+    BOOST_CHECK_EQUAL(1, boost::distance(q.equal_range(37)));
 
-    BOOST_CHECK_EQUAL("Tom", v.equal_range(25).first->second);
-    BOOST_CHECK_EQUAL("Terry", v.equal_range(37).first->second);
-    BOOST_CHECK(v.equal_range(22) | linq::values | linq::contains("Bob") );
-    BOOST_CHECK(v.equal_range(22) | linq::values | linq::contains("Jerry") );
+    BOOST_CHECK_EQUAL("Tom", q.equal_range(25).first->second);
+    BOOST_CHECK_EQUAL("Terry", q.equal_range(37).first->second);
+    BOOST_CHECK(q.equal_range(22) | linq::values | linq::contains("Bob") );
+    BOOST_CHECK(q.equal_range(22) | linq::values | linq::contains("Jerry") );
 
 
 }
