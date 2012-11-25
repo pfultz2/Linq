@@ -20,7 +20,7 @@ struct average_t
 
     template<class Range>
     auto operator()(Range&& r) const LINQ_RETURNS
-    ((r | linq::sum) / boost::distance(r)); 
+    (1.0 * (r | linq::sum) / boost::distance(r)); 
 };
 }
 namespace {

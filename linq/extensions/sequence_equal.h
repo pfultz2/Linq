@@ -32,7 +32,7 @@ struct sequence_equal_t
     template<class R1, class R2>
     bool operator()(R1 && r1, R2 && r2) const
     {
-      return equal(boost::begin(r1), boost::end(r1), boost::begin(r2), boost::end(r2));
+      return linq::detail::equal(boost::begin(r1), boost::end(r1), boost::begin(r2), boost::end(r2));
     }
 };
 }

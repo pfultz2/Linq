@@ -11,6 +11,20 @@
 #include <linq/extensions/extension.h>
 #include <boost/range.hpp>
 
+// TODO: Add overload for string
+namespace linq_adl {
+template<class Range, class T>
+auto find(Range && r, T && x) LINQ_RETURNS(std::find(boost::begin(r), boost::end(r), std::forward<T>(x)));
+}
+
+namespace linq_find_impl
+{
+    using namespace linq_adl;
+    template<class Range, class T>
+    auto find_impl(Range && r, T && x) LINQ_RETURNS
+    (find(std::forward<Range>(r), std::forward<T>(x)));
+}
+
 namespace linq { 
 
 //
@@ -18,15 +32,15 @@ namespace linq {
 //
 namespace detail {
 
-// TODO: Add overload for string
-template<class Range, class T>
-auto find(Range && r, T && x) LINQ_RETURNS(std::find(boost::begin(r), boost::end(r), std::forward<T>(x)));
 
+
+
+//using linq_adl::find;
 struct find_t
 {
     template<class Range, class T>
     auto operator()(Range && r, T && x) const
-    LINQ_RETURNS(find(std::forward<Range>(r), std::forward<T>(x)));
+    LINQ_RETURNS(linq_find_impl::find_impl(std::forward<Range>(r), std::forward<T>(x)));
 };
 }
 namespace {

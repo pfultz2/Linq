@@ -24,6 +24,13 @@ namespace linq {
 // group_by
 //
 namespace detail {
+
+template<class T>
+T&& assert_range(T && x)
+{
+    static_assert(is_range<T>::value, "Must be a range");
+    return std::forward<T>(x);
+}
 struct group_by_t
 {
     struct map_selector
@@ -36,7 +43,7 @@ struct group_by_t
     template<class Range, class KeySelector>
     auto operator()(Range && r, KeySelector ks) const LINQ_RETURNS
     (
-        make_map( r | linq::select(std::bind(map_selector(), ks, identity_selector(), _1)) )
+        make_map( assert_range( r | linq::select(std::bind(map_selector(), ks, identity_selector(), _1)) ) )
     );
 
     // TODO: Custom comparer overloads can't be supported right now, 
@@ -46,7 +53,7 @@ struct group_by_t
     template<class Range, class KeySelector, class ElementSelector>
     auto operator()(Range && r, KeySelector ks, ElementSelector es) const LINQ_RETURNS
     (
-        make_map( r | linq::select(std::bind(map_selector(), ks, es, _1)) )
+        make_map( assert_range( r | linq::select(std::bind(map_selector(), ks, es, _1)) ) )
     );
 
 };
