@@ -20,29 +20,46 @@ namespace linq {
 // is_iterator type trait
 //
 namespace detail {
-BOOST_MPL_HAS_XXX_TRAIT_DEF(iterator_category)
+
+template<class T1 = void, class T2 = void, class T3 = void, class T4 = void, class T5 = void>
+struct holder
+{
+    typedef void type;
+};
+
 }
 
-template<class T, class Enabler = void>
-struct is_iterator
-: boost::mpl::false_
+template<class T, class X = void>
+struct is_iterator 
+: boost::mpl::bool_<false>
 {};
+
 template<class T>
-struct is_iterator<T, BOOST_DEDUCED_TYPENAME boost::enable_if<detail::has_iterator_category<T> >::type >
-: boost::mpl::true_
+struct is_iterator<T*>
+: boost::mpl::bool_<true>
 {};
-template<class T>
-struct is_iterator<T, BOOST_DEDUCED_TYPENAME boost::enable_if<boost::is_pointer<T> >::type >
-: boost::mpl::true_
+
+template<class Iterator>
+struct is_iterator<Iterator, typename linq::detail::holder
+<
+    typename Iterator::iterator_category, 
+    typename Iterator::reference, 
+    typename Iterator::pointer, 
+    typename Iterator::value_type, 
+    typename Iterator::difference_type 
+>::type >
+: boost::mpl::bool_<true>
 {};
 
 //
 // is_range type trait
 //
 template<class T>
-struct is_range : boost::mpl::eval_if< boost::is_const<T>,
-boost::has_range_const_iterator<BOOST_DEDUCED_TYPENAME boost::remove_const<T>::type>,
-boost::mpl::and_<boost::has_range_iterator<T>, boost::has_range_const_iterator<T> > 
+struct is_range : boost::mpl::if_
+< 
+    boost::is_const<T>,
+    boost::has_range_const_iterator<typename boost::remove_const<T>::type>,
+    boost::mpl::and_<boost::has_range_iterator<T>, boost::has_range_const_iterator<T> > 
 >::type
 {};
 template<class T, class U>
