@@ -21,7 +21,7 @@ namespace linq {
 // Range extension
 //
 #ifndef LINQ_LIMIT_EXTENSION
-#define LINQ_LIMIT_EXTENSION 4
+#define LINQ_LIMIT_EXTENSION 6
 #endif
 namespace detail {
 struct na {};
@@ -95,8 +95,8 @@ struct range_extension
 {
     BOOST_PP_REPEAT_FROM_TO_1(1, LINQ_LIMIT_EXTENSION, LINQ_RANGE_EXTENSION_OP, ~)
     template<class Range>
-    friend auto operator|(Range && r, range_extension) LINQ_RETURN_REQUIRES(is_range<Range>)
-    (F()(std::forward<Range>(r)))
+    friend auto operator|(Range && r, const range_extension) LINQ_RETURN_REQUIRES(is_range<Range>)
+    (F()(std::forward<Range>(r)));
 
     range_extension<F>& operator()()
     {
