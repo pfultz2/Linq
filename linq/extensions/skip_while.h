@@ -17,7 +17,7 @@ namespace detail {
 struct skip_while_t
 {
     template<class Range, class Predicate>
-    auto operator()(Range && r, Predicate p) const LINQ_RETURNS(boost::make_reverse_iterator(boost::find_if(r, p). boost::end(r)));
+    auto operator()(Range && r, Predicate p) const LINQ_RETURNS(boost::make_reverse_iterator(boost::find_if(r, p), boost::end(r)));
 };
 }
 namespace {
