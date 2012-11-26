@@ -95,7 +95,7 @@ typename detail::auto_ref_type<T>::type auto_ref(T&& x)
 // This makes it work for raw strings
 // TODO: Make auto_ref work for any raw array
 template<int N>
-const char * auto_ref(char const (&)[N] x)
+const char * auto_ref(char const (& x)[N])
 {
     return x;
 }
