@@ -29,7 +29,7 @@ struct group_by_t
     struct map_selector
     {
         template<class KeySelector, class ElementSelector, class T>
-        auto operator()(KeySelector key_selector, ElementSelector element_selector, T && x) 
+        auto operator()(KeySelector key_selector, ElementSelector element_selector, T && x) const
         LINQ_RETURNS(std::make_pair(key_selector(x), element_selector(x)));
     };
 
