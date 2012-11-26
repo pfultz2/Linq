@@ -79,11 +79,11 @@ struct auto_ref_type<T&, typename std::enable_if<!std::is_bind_expression<T>::va
     typedef std::reference_wrapper<T> type;
 };
 
-template<class T>
-struct auto_ref_type<const T&, typename std::enable_if<!std::is_bind_expression<T>::value>::type>
-{
-    typedef std::reference_wrapper<const T> type;
-};
+// template<class T>ma
+// struct auto_ref_type<const T&, typename std::enable_if<!std::is_bind_expression<T>::value>::type>
+// {
+//     typedef std::reference_wrapper<const T> type;
+// };
 
 
 template<class T>
