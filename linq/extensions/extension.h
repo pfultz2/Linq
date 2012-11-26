@@ -92,6 +92,14 @@ typename detail::auto_ref_type<T>::type auto_ref(T&& x)
     return typename detail::auto_ref_type<T>::type(std::forward<T>(x));
 }
 
+// This makes it work for raw strings
+// TODO: Make auto_ref work for any raw array
+template<int N>
+const char * auto_ref(char const (&)[N] x)
+{
+    return x;
+}
+
 // template<class T>
 // struct is_bw
 // : boost::mpl::bool_<false>
