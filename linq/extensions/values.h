@@ -18,7 +18,7 @@ struct values_t
     struct value_selector
     {
         template<class T>
-        auto operator()(T && x) const LINQ_RETURNS(x.first);
+        auto operator()(T && x) const LINQ_RETURNS(x.second);
     };
 
     template<class Range>
