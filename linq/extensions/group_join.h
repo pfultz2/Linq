@@ -65,9 +65,9 @@ struct group_join_t
             std::bind
             (
                 join_selector(), 
-                make_map(inner | linq::select(std::bind(join_inner_selector(), inner_key_selector, _1))), 
-                outer_key_selector, 
-                result_selector, 
+                make_map(inner | linq::select(std::bind(join_inner_selector(), protect(inner_key_selector), _1))), 
+                protect(outer_key_selector), 
+                protect(result_selector), 
                 _1
             )
         )
