@@ -14,6 +14,7 @@
 #include <linq/extensions/detail/placeholders.h>
 #include <utility>
 #include <functional>
+#include <boost/static_assert.hpp>
 
 namespace linq { 
 
@@ -48,25 +49,25 @@ pipe_closure<F> make_pipe_closure(F f)
     return pipe_closure<F>(f);
 }
 
-template<class F>
-struct bind_wrapper : F
-{
-    template<class X>
-    bind_wrapper(X x) : F(x)
-    {}
-};
+// template<class F>
+// struct bind_wrapper : sfinae_error<F>
+// {
+//     template<class X>
+//     bind_wrapper(X x) : sfinae_error<F>(x)
+//     {}
+// };
 
-template<class T, class Enable = void>
+template<class T>
 struct auto_ref_type
 {
     typedef T type;
 };
 
-template<class T>
-struct auto_ref_type<T, typename std::enable_if<std::is_bind_expression<T>::value>::type>
-{
-    typedef bind_wrapper<typename std::decay<T>::type> type;
-};
+// template<class T>
+// struct auto_ref_type<T, typename std::enable_if<std::is_bind_expression<typename std::remove_cv<typename std::decay<T>::type>::type>::value>::type>
+// {
+//     typedef bind_wrapper<typename std::remove_cv<typename std::decay<T>::type>::type> type;
+// };
 
 template<class T>
 struct auto_ref_type<T&&>
@@ -74,7 +75,7 @@ struct auto_ref_type<T&&>
 {};
 
 template<class T>
-struct auto_ref_type<T&, typename std::enable_if<!std::is_bind_expression<T>::value>::type>
+struct auto_ref_type<T&>
 {
     typedef std::reference_wrapper<T> type;
 };
@@ -124,7 +125,7 @@ const char * auto_ref(char const (& x)[N])
 
 }
 
-#define LINQ_RANGE_EXTENSION_AUTO_REF(z, n, data) detail::auto_ref(std::forward<T ## n>(x ## n))
+#define LINQ_RANGE_EXTENSION_AUTO_REF(z, n, data) linq::detail::auto_ref(linq::protect(std::forward<T ## n>(x ## n)))
 
 #define LINQ_RANGE_EXTENSION_OP(z, n, data) \
     template<BOOST_PP_ENUM_PARAMS_Z(z, n, class T)> \
