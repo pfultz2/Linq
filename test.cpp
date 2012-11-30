@@ -5,12 +5,54 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <list>
+
+static_assert(linq::is_range<std::vector<int>&>::value, "error");
 
 #define BOOST_TEST_MODULE LinqExtensions
 #include <boost/test/included/unit_test.hpp>
 
 using boost::assign::list_of;
 using boost::assign::map_list_of;
+
+struct output_elem
+{
+    template<class Stream, class T>
+    void operator()(Stream && s, const T& x)
+    {
+        s << x << ", ";
+    }
+};
+
+template<class Stream, class Range>
+void output_range(Stream && s, Range && r)
+{
+    s << "(";
+    std::for_each(boost::begin(r), boost::end(r), std::bind(output_elem(), std::ref(s), std::placeholders::_1));
+    s << ")";
+}
+
+template<class Range1, class Range2>
+boost::test_tools::predicate_result
+compare_seq( const Range1& r1, const Range2& r2 )
+{
+    if(!(r1 | linq::sequence_equal(r2)) ) 
+    {
+        boost::test_tools::predicate_result res( false );
+
+        res.message() << "Different sequences\n    [";
+        output_range(res.message(), r1);
+        res.message() << "!=";
+        output_range(res.message(), r2);
+        res.message() << "]";
+
+        return res;
+    }
+
+    return true;
+}
+
+#define CHECK_SEQ(x, y) BOOST_CHECK(compare_seq(x, y))
 
 struct odd
 {
@@ -308,7 +350,7 @@ BOOST_AUTO_TEST_CASE( select_many_test )
     std::vector<int> r = list_of(90)(100)(75)
     (92)(81)(70)
     (105)(98)(94);
-    BOOST_CHECK(students | linq::select_many([](student s) { return s.grades; }) | linq::sequence_equal(r));
+    CHECK_SEQ(r, students | linq::select_many([](student& s) { return std::ref(s.grades); }));
 }
 
 BOOST_AUTO_TEST_CASE( select_test )
@@ -318,11 +360,90 @@ BOOST_AUTO_TEST_CASE( select_test )
     BOOST_CHECK(v | linq::select([](int i) { return i * 3; }) | linq::sequence_equal(r));
 }
 
+BOOST_AUTO_TEST_CASE( single_test )
+{
+    std::vector<int> v = list_of(1);
+    BOOST_CHECK_EQUAL(1, v | linq::single);
+}
+
+BOOST_AUTO_TEST_CASE( single_or_default_test )
+{
+    std::vector<int> v = list_of(1);
+    std::vector<int> empty_v;
+    BOOST_CHECK_EQUAL(1, v | linq::single_or_default(0));
+    BOOST_CHECK_EQUAL(0, empty_v | linq::single_or_default(0));
+}
+
+BOOST_AUTO_TEST_CASE( skip_test )
+{
+    std::vector<int> v = list_of(0)(1)(2)(3)(4)(5);
+    std::vector<int> r = list_of(4)(5);
+    CHECK_SEQ(r, v | linq::skip(4));
+}
+
+BOOST_AUTO_TEST_CASE( skip_while_test )
+{
+    std::vector<int> v = list_of(1)(3)(4)(5);
+    std::vector<int> r = list_of(4)(5);
+    CHECK_SEQ(r, v | linq::skip_while(odd()));
+}
+
+BOOST_AUTO_TEST_CASE( sum_test )
+{
+    std::vector<int> v = list_of(1)(2)(3);
+    BOOST_CHECK_EQUAL(6, v | linq::sum);
+}
+
+BOOST_AUTO_TEST_CASE( take_test )
+{
+    std::vector<int> v = list_of(0)(1)(2)(3)(4)(5);
+    std::vector<int> r = list_of(0)(1)(2)(3);
+    BOOST_CHECK(v | linq::take(4) | linq::sequence_equal(r));
+}
+
+BOOST_AUTO_TEST_CASE( take_while_test )
+{
+    std::vector<int> v = list_of(1)(3)(4)(5);
+    std::vector<int> r = list_of(1)(3);
+    BOOST_CHECK(v | linq::take_while(odd()) | linq::sequence_equal(r));
+}
+
+BOOST_AUTO_TEST_CASE( to_container_test )
+{
+    std::vector<int> v = list_of(1)(2)(3)(4);
+    std::list<int> l = v | linq::select([](int i) { return i * 3; }) | linq::to_container;
+    std::vector<int> r = list_of(3)(6)(9)(12);
+    BOOST_CHECK(l | linq::sequence_equal(r));
+}
+
+// BOOST_AUTO_TEST_CASE( to_string_test )
+// {
+//     std::string lower = "test";
+//     std::string upper = lower | linq::select([](char c) { return toupper(c); }) | linq::to_string;
+//     BOOST_CHECK_EQUAL(upper, "TEST");
+// }
+
 BOOST_AUTO_TEST_CASE( values_test )
 {
     std::map<int, int> m = map_list_of(1, 10)(2, 20)(3, 30);
     std::vector<int> v = list_of(10)(20)(30);
-    BOOST_CHECK(m | linq::keys | linq::sequence_equal(v));
+    CHECK_SEQ(v, m | linq::values);
+}
+
+BOOST_AUTO_TEST_CASE( where_test )
+{
+    std::vector<int> v = list_of(1)(3)(4)(5);
+    std::vector<int> r = list_of(1)(3)(5);
+    BOOST_CHECK(v | linq::where(odd()) | linq::sequence_equal(r));
+}
+
+BOOST_AUTO_TEST_CASE( zip_test )
+{
+    std::vector<int> v1 = list_of(1)(2)(3);
+    std::vector<int> v2 = list_of(10)(20)(30);
+    std::vector<int> r = list_of(11)(22)(33);
+
+    BOOST_CHECK(v1 | linq::zip(v2, [](int x, int y) { return x + y; }) | linq::sequence_equal(r));
 }
 
 

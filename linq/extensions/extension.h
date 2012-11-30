@@ -36,10 +36,10 @@ struct pipe_closure
     {};
 
     template<class Range>
-    friend typename std::result_of<F(Range&&)>::type 
+    friend typename std::result_of<const F(Range&&)>::type 
     operator|(Range&& r, const pipe_closure& p)
     {
-        return p.f(r);
+        return p.f(std::forward<Range>(r));
     }
 };
 

@@ -53,11 +53,23 @@ struct function_object
         typedef decltype(linq::declval<Fun>()(linq::declval<T>())) type;
     };
 
+    template<class F, class T, class U>
+    struct result<F(T, U)>
+    {
+        typedef decltype(linq::declval<Fun>()(linq::declval<T>(), linq::declval<U>())) type;
+    };
+
     template<class T>
     auto operator()(T && x) const LINQ_RETURNS((*f)(std::forward<T>(x)));
 
     template<class T>
     auto operator()(T && x) LINQ_RETURNS((*f)(std::forward<T>(x)));
+
+    template<class T, class U>
+    auto operator()(T && x, U && y) const LINQ_RETURNS((*f)(std::forward<T>(x), std::forward<U>(y)));
+
+    template<class T, class U>
+    auto operator()(T && x, U && y) LINQ_RETURNS((*f)(std::forward<T>(x), std::forward<U>(y)));
 };
 
 template<class F>
