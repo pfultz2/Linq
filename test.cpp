@@ -351,6 +351,7 @@ BOOST_AUTO_TEST_CASE( select_many_test )
     (92)(81)(70)
     (105)(98)(94);
     CHECK_SEQ(r, students | linq::select_many([](student& s) { return std::ref(s.grades); }));
+    CHECK_SEQ(r, students | linq::select_many([](student& s) { return s.grades | linq::select([](int& g){ return std::ref(g); }); }));
 }
 
 BOOST_AUTO_TEST_CASE( select_test )

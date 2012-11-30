@@ -14,6 +14,20 @@
 
 namespace linq { 
 
+namespace detail {
+template<class T>
+struct unwrap
+{
+    typedef T type;
+};
+
+template<class T>
+struct unwrap<std::reference_wrapper<T> >
+{
+    typedef T& type;
+};
+}
+
 // Lambdas aren't very nice, so we use this wrapper to make them play nicer. This
 // will make the function_object default constructible, even if it doesn't have a
 // default constructor. This helpful since these function objects are being used
@@ -50,26 +64,33 @@ struct function_object
     template<class F, class T>
     struct result<F(T)>
     {
-        typedef decltype(linq::declval<Fun>()(linq::declval<T>())) type;
+        typedef typename detail::unwrap<decltype(linq::declval<F>()(linq::declval<T>()))>::type type;
     };
 
     template<class F, class T, class U>
     struct result<F(T, U)>
     {
-        typedef decltype(linq::declval<Fun>()(linq::declval<T>(), linq::declval<U>())) type;
+        typedef typename detail::unwrap<decltype(linq::declval<F>()(linq::declval<T>(), linq::declval<U>()))>::type type;
     };
 
     template<class T>
-    auto operator()(T && x) const LINQ_RETURNS((*f)(std::forward<T>(x)));
+    typename result<const Fun(T)>::type operator()(T && x) const 
+    {
+        return (*f)(std::forward<T>(x));
+    }
 
-    template<class T>
-    auto operator()(T && x) LINQ_RETURNS((*f)(std::forward<T>(x)));
+    // template<class T>
+    // auto operator()(T && x) LINQ_RETURNS((*f)(std::forward<T>(x)));
+
 
     template<class T, class U>
-    auto operator()(T && x, U && y) const LINQ_RETURNS((*f)(std::forward<T>(x), std::forward<U>(y)));
+    typename result<const Fun(T&&, U&&)>::type operator()(T && x, U && y) const 
+    {
+        return (*f)(std::forward<T>(x), std::forward<U>(y));
+    }
 
-    template<class T, class U>
-    auto operator()(T && x, U && y) LINQ_RETURNS((*f)(std::forward<T>(x), std::forward<U>(y)));
+    // template<class T, class U>
+    // auto operator()(T && x, U && y) LINQ_RETURNS((*f)(std::forward<T>(x), std::forward<U>(y)));
 };
 
 template<class F>
