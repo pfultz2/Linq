@@ -39,22 +39,21 @@ struct join_inner_selector
 struct join_selector
 {
 
-    template<class Lookup, class Key>
-    static auto create_pair(Lookup && inner_lookup, Key && x) LINQ_RETURNS
+    template<class Lookup, class Key, class ResultKeySelector>
+    static auto select_result(const Lookup & inner_lookup, Key && x, ResultKeySelector rs) LINQ_RETURNS
     (
-        std::make_pair(std::forward<Key>(x), inner_lookup.equal_range(std::forward<Key>(x)) | linq::values)
+        rs(std::forward<Key>(x), inner_lookup.equal_range(std::forward<Key>(x)) | linq::values)
     );
 
     template<class Lookup, class OuterKeySelector, class ResultKeySelector, class T>
-    auto operator()(Lookup && inner_lookup, OuterKeySelector os, ResultKeySelector rs, T && x) const LINQ_RETURNS
+    auto operator()(const Lookup & inner_lookup, OuterKeySelector os, ResultKeySelector rs, T && x) const LINQ_RETURNS
     (
-        rs
-        ( 
-            create_pair(std::forward<Lookup>(inner_lookup), os(std::forward<T>(x))) 
-        )
+        rs(std::forward<T>(x), inner_lookup.equal_range(os(std::forward<T>(x))) | linq::values)
     );
 };
 
+// TODO: Add a way to statically assert that all function objects can be called
+// with the correct type and display an error
 struct group_join_t
 {
     template<class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>
