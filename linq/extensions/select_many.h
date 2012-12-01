@@ -51,7 +51,7 @@ struct is_bindable_range<T&&>
 
 template<class T>
 struct is_bindable_range<T&>
-: boost::mpl::bool_<true>
+: is_range<T>
 {};
 
 template<class T>
@@ -125,6 +125,7 @@ struct bind_iterator
 template<class Iterator, class Selector>
 bind_iterator<Iterator, Selector> make_bind_iterator(Selector selector, Iterator iterator, Iterator last)
 {
+    static_assert(is_bindable_range<typename std::result_of<Selector(typename boost::iterator_reference<Iterator>::type)>::type>::value, "Ranges returned from select_many must be bindable");
     return bind_iterator<Iterator, Selector>(selector, iterator, last);
 }
 
