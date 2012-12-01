@@ -20,6 +20,14 @@ namespace linq {
 namespace detail {
 struct join_t
 {
+    struct result_selector
+    {
+        template<class ResultSelector, class Pair>
+        auto operator()(ResultSelector rs, Pair && p) const LINQ_RETURNS
+        (
+            rs(p.first, p.second)
+        );
+    };
     struct pair_selector
     {
         template<class Key, class Value>
@@ -33,14 +41,15 @@ struct join_t
         template<class Pair>
         auto operator()(Pair && p) const LINQ_RETURNS
         (
-            p.second | linq::select(std::bind(pair_selector(), p.first, _1))
+            p.second | linq::select(std::bind(pair_selector(), p.first, linq::_1))
         );
     };
     template<class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>
-    auto operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector result_selector) LINQ_RETURNS
+    auto operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector rs) LINQ_RETURNS
     (
-        linq::group_join(std::forward<Outer>(outer), std::forward<Inner>(inner), outer_key_selector, inner_key_selector, result_selector)
+        linq::group_join(std::forward<Outer>(outer), std::forward<Inner>(inner), outer_key_selector, inner_key_selector, pair_selector())
         | linq::select_many(join_selector())
+        | linq::select(std::bind(result_selector(), protect(rs), linq::_1))
     );
 };
 }
