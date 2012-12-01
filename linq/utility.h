@@ -15,13 +15,29 @@
 //
 // LINQ_RETURNS for auto return type deduction.
 //
-#define LINQ_RETURNS(...) -> decltype(__VA_ARGS__) { return (__VA_ARGS__); } static_assert(true, "")
+#define LINQ_RETURNS(...) -> typename linq::detail::returns_<decltype(__VA_ARGS__)>::type { return (__VA_ARGS__); } static_assert(true, "")
 
 
 #define LINQ_ERROR_RETURN_REQUIRES_NEEDS_AN_EXPRESSION(...) decltype(__VA_ARGS__)>::type { return __VA_ARGS__; }
 #define LINQ_RETURN_REQUIRES(...) -> typename boost::enable_if<__VA_ARGS__, LINQ_ERROR_RETURN_REQUIRES_NEEDS_AN_EXPRESSION
 
 namespace linq {
+
+namespace detail{
+
+template<class T>
+struct returns_
+{
+    typedef T type;
+};
+
+template<class T>
+struct returns_<T&&>
+: returns_<T>
+{};
+
+
+}
 
 // MSVC 2010 doesn't provide declval
 // We also return T&& instead std::add_rvalue_reference<T>
