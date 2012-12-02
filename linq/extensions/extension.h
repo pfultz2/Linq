@@ -12,6 +12,7 @@
 #include <linq/utility.h>
 #include <linq/traits.h>
 #include <linq/extensions/detail/placeholders.h>
+#include <linq/extensions/detail/defer.h>
 #include <utility>
 #include <functional>
 #include <boost/static_assert.hpp>
@@ -36,7 +37,7 @@ struct pipe_closure
     {};
 
     template<class Range>
-    friend typename std::result_of<const F(Range&&)>::type 
+    friend typename boost::lazy_enable_if<is_range<Range>, std::result_of<const F(Range&&)> >::type
     operator|(Range&& r, const pipe_closure& p)
     {
         return p.f(std::forward<Range>(r));
@@ -132,7 +133,7 @@ const char * auto_ref(char const (& x)[N])
     auto operator()(BOOST_PP_ENUM_BINARY_PARAMS_Z(z, n, T, && x) ) const LINQ_RETURNS \
     ( \
         detail::make_pipe_closure \
-        (std::bind(F(), linq::_1, BOOST_PP_ENUM_ ## z(n, LINQ_RANGE_EXTENSION_AUTO_REF, ~) ) ) \
+        (std::bind(defer<F>(), linq::_1, BOOST_PP_ENUM_ ## z(n, LINQ_RANGE_EXTENSION_AUTO_REF, ~) ) ) \
     ); 
 
 template<class F>
