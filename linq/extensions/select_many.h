@@ -33,7 +33,7 @@ struct is_iterator_range<T&&>
 {};
 
 template<class T>
-struct is_iterator_range<T, typename std::enable_if<is_range<T>::value>::type>
+struct is_iterator_range<T, typename std::enable_if<is_range<T>::value && !boost::is_reference<T>::value>::type>
 : boost::is_base_of<boost::iterator_range<typename boost::range_iterator<T>::type>, T>
 {};
 
@@ -55,7 +55,7 @@ struct is_bindable_range<T&>
 {};
 
 template<class T>
-struct is_bindable_range<T, typename std::enable_if<detail::is_iterator_range<T>::value>::type>
+struct is_bindable_range<T, typename std::enable_if<detail::is_iterator_range<T>::value && !boost::is_reference<T>::value>::type>
 : boost::mpl::bool_<true>
 {};
 
