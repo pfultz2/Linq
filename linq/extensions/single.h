@@ -16,10 +16,16 @@ namespace linq {
 namespace detail {
 struct single_t
 {
+
+    static std::out_of_range single_throw()
+    {
+        return std::out_of_range("Is not a single range");
+    }
+
     template<class Range>
     auto operator()(Range && r) const LINQ_RETURNS
     (
-        is_single(r) ? *boost::begin(r) : throw std::out_of_range("Is not a single range")
+        is_single(r) ? *boost::begin(r) : throw single_throw()
     );
 };
 }
