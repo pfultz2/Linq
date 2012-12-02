@@ -23,7 +23,7 @@ struct keys_t
     };
 
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS(r | linq::select(key_selector()));
+    auto operator()(Range && r) const LINQ_RETURNS(r | linq::select(defer<key_selector>()));
 
 };
 }

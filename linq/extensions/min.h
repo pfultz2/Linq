@@ -10,6 +10,7 @@
 
 #include <linq/extensions/extension.h>
 #include <linq/extensions/aggregate.h>
+#include <linq/extensions/detail/defer.h>
 
 namespace linq { 
 namespace detail {
@@ -27,7 +28,7 @@ struct min_t
 {
     template<class Range>
     auto operator()(Range && r) const
-    LINQ_RETURNS(r | linq::aggregate(min_reducer()));
+    LINQ_RETURNS(r | linq::aggregate(defer<min_reducer>()));
 };
 }
 namespace {

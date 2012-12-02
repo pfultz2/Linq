@@ -14,6 +14,7 @@
 #include <linq/extensions/detail/identity.h>
 #include <linq/extensions/detail/make_map.h>
 #include <linq/extensions/detail/placeholders.h>
+#include <linq/extensions/detail/defer.h>
 #include <linq/utility.h>
 #include <boost/range.hpp>
 #include <functional>
@@ -36,7 +37,7 @@ struct join_inner_selector
 };
 
 
-struct join_selector
+struct join_outer_selector
 {
 
     template<class Lookup, class Key, class ResultKeySelector>
@@ -63,8 +64,8 @@ struct group_join_t
         (
             std::bind
             (
-                join_selector(), 
-                make_map(inner | linq::select(std::bind(join_inner_selector(), protect(inner_key_selector), _1))), 
+                defer<join_outer_selector>(), 
+                make_map(inner | linq::select(std::bind(defer<join_inner_selector>(), protect(inner_key_selector), _1))), 
                 protect(outer_key_selector), 
                 protect(result_selector), 
                 _1

@@ -12,6 +12,7 @@
 #include <linq/extensions/detail/identity.h>
 #include <linq/extensions/detail/make_map.h>
 #include <linq/extensions/detail/placeholders.h>
+#include <linq/extensions/detail/defer.h>
 #include <linq/extensions/select.h>
 #include <linq/utility.h>
 #include <boost/range.hpp>
@@ -36,7 +37,7 @@ struct group_by_t
     template<class Range, class KeySelector>
     auto operator()(Range && r, KeySelector ks) const LINQ_RETURNS
     (
-        make_map( r | linq::select(std::bind(map_selector(), ks, identity_selector(), linq::_1)) )
+        make_map( r | linq::select(std::bind(defer<map_selector>(), ks, defer<identity_selector>(), linq::_1)) )
     );
 
     // TODO: Custom comparer overloads can't be supported right now, 
@@ -46,7 +47,7 @@ struct group_by_t
     template<class Range, class KeySelector, class ElementSelector>
     auto operator()(Range && r, KeySelector ks, ElementSelector es) const LINQ_RETURNS
     (
-        make_map( r | linq::select(std::bind(map_selector(), ks, es, linq::_1)) )
+        make_map( r | linq::select(std::bind(defer<map_selector>(), ks, es, linq::_1)) )
     );
 
 };

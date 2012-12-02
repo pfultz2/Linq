@@ -10,6 +10,7 @@
 
 #include <linq/extensions/extension.h>
 #include <linq/extensions/aggregate.h>
+#include <linq/extensions/detail/defer.h>
 
 namespace linq { 
 namespace detail {
@@ -26,7 +27,7 @@ struct sum_reducer
 struct sum_t
 {
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS(r | linq::aggregate(sum_reducer()));
+    auto operator()(Range && r) const LINQ_RETURNS(r | linq::aggregate(defer<sum_reducer>()));
 };
 }
 namespace {

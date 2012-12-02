@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_VALUES_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/defer.h>
 
 namespace linq { 
 
@@ -22,7 +23,7 @@ struct values_t
     };
 
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS(r | linq::select(value_selector()));
+    auto operator()(Range && r) const LINQ_RETURNS(r | linq::select(defer<value_selector>()));
 };
 }
 namespace {
