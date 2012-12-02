@@ -36,7 +36,6 @@ struct returns_<T&&>
 : returns_<T>
 {};
 
-
 }
 
 // MSVC 2010 doesn't provide declval
