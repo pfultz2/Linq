@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <list>
+#include <boost/foreach.hpp>
 
 static_assert(linq::is_range<std::vector<int>&>::value, "error");
 
@@ -98,6 +99,13 @@ struct pet
     pet(std::string name, std::string owner)
     : name(name), owner(owner)
     {}
+};
+
+struct name_selector
+{
+    template<class T>
+    auto operator()(T && x) const LINQ_RETURNS
+    (x.name);
 };
 
 BOOST_AUTO_TEST_CASE( aggregate_test )
@@ -247,6 +255,16 @@ BOOST_AUTO_TEST_CASE( group_by_test )
 
 }
 
+struct group_join_select
+{
+    template<class Person, class Pets>
+    auto operator()(Person && p, Pets && pets) const LINQ_RETURNS
+    (
+        std::make_pair(p.name, pets | linq::select(name_selector()))
+    );
+
+};
+
 BOOST_AUTO_TEST_CASE( group_join_test )
 {
     std::vector<person> people = list_of
@@ -261,17 +279,77 @@ BOOST_AUTO_TEST_CASE( group_join_test )
     (pet("Willie", "Bob"))
     (pet("Dan", "Jerry"));
 
-    // auto q = linq::detail::group_join_t()(people, pets, 
-    //     [](person p) { return p.name; },
-    //     [](pet p) { return p.owner; },
-    //     linq::detail::identity_selector());
+    auto q = people | linq::group_join(pets, 
+        [](person p) { return p.name; },
+        [](pet p) { return p.owner; },
+        group_join_select());
 
-    // auto q = people | linq::group_join(pets, 
-    //     [](person p) { return p.name; },
-    //     [](pet p) { return p.owner; },
-    //     linq::detail::identity_selector());
+    BOOST_CHECK_EQUAL(people.size(), boost::distance(q));
 
+    BOOST_FOREACH(auto x, q)
+    {
+        if (x.first == "Tom")
+        {
+            BOOST_CHECK_EQUAL(0, boost::distance(x.second));
+        }
 
+        if (x.first == "Bob")
+        {
+            BOOST_CHECK_EQUAL(1, boost::distance(x.second));
+            BOOST_CHECK_EQUAL("Willie", x.second | linq::first);
+        }
+
+        if (x.first == "Terry")
+        {
+            BOOST_CHECK_EQUAL(2, boost::distance(x.second));
+            BOOST_CHECK(x.second | linq::contains("Barry"));
+            BOOST_CHECK(x.second | linq::contains("Betty"));
+        }
+
+        if (x.first == "Jerry")
+        {
+            BOOST_CHECK_EQUAL(1, boost::distance(x.second));
+            BOOST_CHECK_EQUAL("Dan", x.second | linq::first);
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE( join_test )
+{
+    std::vector<person> people = list_of
+    (person("Tom", 25))
+    (person("Bob", 22))
+    (person("Terry", 37))
+    (person("Jerry", 22));
+
+    std::vector<pet> pets = list_of
+    (pet("Barry", "Terry"))
+    (pet("Betty", "Terry"))
+    (pet("Willie", "Bob"))
+    (pet("Dan", "Jerry"));
+
+    auto q = people | linq::join(pets, 
+        [](person p) { return p.name; },
+        [](pet p) { return p.owner; },
+        [](person, pet p) { return p.name; });
+
+    std::vector<std::string> r1 = list_of
+    ("Willie")
+    ("Barry")
+    ("Betty")
+    ("Dan");
+
+    std::vector<std::string> r2 = list_of
+    ("Willie")
+    ("Betty")
+    ("Barry")
+    ("Dan");
+
+    BOOST_CHECK
+    (
+        (r1 | linq::sequence_equal(q)) ||
+        (r2 | linq::sequence_equal(q))
+    );
 }
 
 BOOST_AUTO_TEST_CASE( intersect_test )
