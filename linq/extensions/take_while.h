@@ -12,16 +12,10 @@
 #include <boost/range.hpp>
 #include <boost/range/algorithm/find_if.hpp>
 #include <linq/extensions/detail/placeholders.h>
+#include <linq/extensions/detail/not_predicate.h>
 
 namespace linq { 
 namespace detail {
-
-struct not_predicate
-{
-    template<class P, class T>
-    auto operator()(P p, T && x) LINQ_RETURNS(!p(x));
-};
-
 struct take_while_t
 {
     template<class Range, class Predicate>
