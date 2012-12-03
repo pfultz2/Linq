@@ -47,7 +47,7 @@ struct join_t
     template<class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>
     auto operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector rs) LINQ_RETURNS
     (
-        linq::group_join(std::forward<Outer>(outer), std::forward<Inner>(inner), outer_key_selector, inner_key_selector, make_pair_selector())
+        outer | linq::group_join(std::forward<Inner>(inner), outer_key_selector, inner_key_selector, make_pair_selector())
         | linq::select_many(defer<join_selector>())
         | linq::select(std::bind(defer<result_selector>(), protect(rs), linq::_1))
     );
