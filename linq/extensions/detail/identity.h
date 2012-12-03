@@ -18,7 +18,7 @@ namespace detail {
 struct identity_selector
 {
     template<class T>
-    auto operator()(T&& x) LINQ_RETURNS(std::forward<T>(x));
+    auto operator()(T&& x) const LINQ_RETURNS(std::forward<T>(x));
 };
 }
 }

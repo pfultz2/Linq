@@ -26,6 +26,26 @@ namespace linq {
 //
 namespace detail {
 
+template<class T>
+struct no_volatile
+: boost::mpl::bool_<true>
+{};
+
+template<class T>
+struct no_volatile<volatile T>
+: boost::mpl::bool_<false>
+{};
+
+template<class T>
+struct no_volatile<T&>
+: no_volatile<T>
+{};
+
+template<class T>
+struct no_volatile<T&&>
+: no_volatile<T>
+{};
+
 struct join_inner_selector
 {
 
@@ -41,13 +61,13 @@ struct join_outer_selector
 {
 
     template<class Lookup, class Key, class ResultKeySelector>
-    static auto select_result(const Lookup & inner_lookup, Key && x, ResultKeySelector rs) LINQ_RETURNS
+    static auto select_result(const Lookup & inner_lookup, Key && x, ResultKeySelector rs) LINQ_RETURN_REQUIRES(no_volatile<Key>)
     (
         rs(std::forward<Key>(x), inner_lookup.equal_range(std::forward<Key>(x)) | linq::values)
     );
 
     template<class Lookup, class OuterKeySelector, class ResultKeySelector, class T>
-    auto operator()(const Lookup & inner_lookup, OuterKeySelector os, ResultKeySelector rs, T && x) const LINQ_RETURNS
+    auto operator()(const Lookup & inner_lookup, OuterKeySelector os, ResultKeySelector rs, T && x) const LINQ_RETURN_REQUIRES(no_volatile<T>)
     (
         rs(std::forward<T>(x), inner_lookup.equal_range(os(std::forward<T>(x))) | linq::values)
     );

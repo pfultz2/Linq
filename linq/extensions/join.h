@@ -18,38 +18,24 @@
 
 namespace linq { 
 namespace detail {
+
+
 struct join_t
 {
     struct result_selector
     {
-        template<class ResultSelector, class Pair>
-        auto operator()(ResultSelector rs, Pair && p) const LINQ_RETURNS
+        template<class ResultSelector, class Key, class Value>
+        auto operator()(ResultSelector rs, Key && k, Value && v) const LINQ_RETURNS
         (
-            rs(p.first, p.second)
+            v | linq::select(std::bind(rs, linq::detail::auto_ref(k), linq::_1))
         );
-    };
-    struct make_pair_selector
-    {
-        template<class Key, class Value>
-        auto operator()(Key && k, Value && v) const LINQ_RETURNS
-        (
-            std::make_pair(std::forward<Key>(k), std::forward<Value>(v))
-        );
-    };
-    struct join_selector
-    {
-        template<class Pair>
-        auto operator()(Pair && p) const LINQ_RETURNS
-        (
-            p.second | linq::select(std::bind(make_pair_selector(), p.first, linq::_1))
-        );
+
     };
     template<class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>
-    auto operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector rs) LINQ_RETURNS
+    auto operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector rs) const LINQ_RETURNS
     (
-        outer | linq::group_join(std::forward<Inner>(inner), outer_key_selector, inner_key_selector, make_pair_selector())
-        | linq::select_many(defer<join_selector>())
-        | linq::select(std::bind(defer<result_selector>(), protect(rs), linq::_1))
+        outer | linq::group_join(std::forward<Inner>(inner), outer_key_selector, inner_key_selector, std::bind(defer<result_selector>(), protect(rs), linq::_1, linq::_2))
+        | linq::select_many(linq::detail::identity_selector())
     );
 };
 }
