@@ -409,14 +409,15 @@ BOOST_AUTO_TEST_CASE( order_by_test )
 
     auto age_select = [](person p) { return p.age; };
 
-    // BOOST_CHECK(people | linq::order_by(age_select) | linq::select(age_select) | linq::sequence_equal(people_age));
+    CHECK_SEQ(people_age, people | linq::order_by(age_select) | linq::select(age_select));
+    CHECK_SEQ(people_age | linq::reverse, people | linq::order_by_descending(age_select) | linq::select(age_select));
 }
 
 BOOST_AUTO_TEST_CASE( reverse_test )
 {
     std::vector<int> v1 = list_of(3)(2)(1);
     std::vector<int> v2 = list_of(1)(2)(3);
-    BOOST_CHECK_EQUAL(1, v1 | linq::reverse | linq::sequence_equal(v2));
+    BOOST_CHECK(v1 | linq::reverse | linq::sequence_equal(v2));
 }
 
 BOOST_AUTO_TEST_CASE( select_many_test )
@@ -485,6 +486,24 @@ BOOST_AUTO_TEST_CASE( take_while_test )
     std::vector<int> v = list_of(1)(3)(4)(5);
     std::vector<int> r = list_of(1)(3);
     BOOST_CHECK(v | linq::take_while(odd()) | linq::sequence_equal(r));
+}
+
+BOOST_AUTO_TEST_CASE( then_by_test )
+{
+    std::vector<person> people = list_of
+    (person("Tom", 25))
+    (person("Bob", 22))
+    (person("Terry", 37))
+    (person("Jerry", 22));
+
+    std::vector<std::string> people_name = list_of("Bob")("Jerry")("Tom")("Terry");
+    std::vector<std::string> people_name_d = list_of("Jerry")("Bob")("Tom")("Terry");
+
+    auto age_select = [](person p) { return p.age; };
+    auto name_select = [](person p) { return p.name; };
+
+    CHECK_SEQ(people_name, people | linq::order_by(age_select) | linq::then_by(name_select) | linq::select(name_select));
+    CHECK_SEQ(people_name_d, people | linq::order_by(age_select) | linq::then_by_descending(name_select) | linq::select(name_select));
 }
 
 BOOST_AUTO_TEST_CASE( to_container_test )
