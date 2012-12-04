@@ -9,6 +9,7 @@
 #define LINQ_GUARD_DETAIL_ORDERED_RANGE_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/function_object.h>
 #include <boost/range.hpp>
 #include <linq/utility.h>
 #include <set>
@@ -54,9 +55,9 @@ struct ordered_range
 };
 
 template<class Iterator, class Compare>
-ordered_range<Iterator, Compare> make_iterator_range(Iterator first, Iterator last, Compare c)
+ordered_range<Iterator, function_object<Compare> > make_ordered_range(Iterator first, Iterator last, Compare c)
 {
-    return ordered_range<Iterator, Compare>(first, last, c);
+    return ordered_range<Iterator, function_object<Compare> >(first, last, function_object<Compare>(c));
 }
 
 }
