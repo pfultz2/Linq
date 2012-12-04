@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_THEN_BY_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/defer.h>
 #include <linq/extensions/detail/ordered_range.h>
 #include <linq/extensions/detail/placeholders.h>
 #include <boost/range.hpp>
@@ -31,7 +32,7 @@ struct then_by_t
 {
     template<class Range, class Selector>
     auto operator()(Range&& r, Selector s) const LINQ_RETURNS
-    (make_ordered_range(boost::begin(r), boost::end(r), std::bind(then_selector(), s, r.c, _1, _2)));
+    (make_ordered_range(boost::begin(r), boost::end(r), std::bind(defer<then_selector>(), s, r.c, _1, _2)));
 };
 }
 namespace {
