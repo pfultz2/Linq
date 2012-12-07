@@ -26,25 +26,25 @@ namespace linq {
 //
 namespace detail {
 
-template<class T>
-struct no_volatile
-: boost::mpl::bool_<true>
-{};
+// template<class T>
+// struct no_volatile
+// : boost::mpl::bool_<true>
+// {};
 
-template<class T>
-struct no_volatile<volatile T>
-: boost::mpl::bool_<false>
-{};
+// template<class T>
+// struct no_volatile<volatile T>
+// : boost::mpl::bool_<false>
+// {};
 
-template<class T>
-struct no_volatile<T&>
-: no_volatile<T>
-{};
+// template<class T>
+// struct no_volatile<T&>
+// : no_volatile<T>
+// {};
 
-template<class T>
-struct no_volatile<T&&>
-: no_volatile<T>
-{};
+// template<class T>
+// struct no_volatile<T&&>
+// : no_volatile<T>
+// {};
 
 struct join_inner_selector
 {
@@ -60,18 +60,41 @@ struct join_inner_selector
 struct join_outer_selector
 {
 
-    template<class Lookup, class Key, class ResultKeySelector>
-    static auto select_result(const Lookup & inner_lookup, Key && x, ResultKeySelector rs) LINQ_RETURN_REQUIRES(no_volatile<Key>)
-    (
-        rs(std::forward<Key>(x), inner_lookup.equal_range(std::forward<Key>(x)) | linq::values)
-    );
-
     template<class Lookup, class OuterKeySelector, class ResultKeySelector, class T>
-    auto operator()(const Lookup & inner_lookup, OuterKeySelector os, ResultKeySelector rs, T && x) const LINQ_RETURN_REQUIRES(no_volatile<T>)
+    auto operator()(const Lookup & inner_lookup, OuterKeySelector os, ResultKeySelector rs, T && x) const LINQ_RETURNS
     (
         rs(std::forward<T>(x), inner_lookup.equal_range(os(std::forward<T>(x))) | linq::values)
     );
 };
+
+// template<class Outer, class Lookup, class OuterKeySelector, class ResultSelector, class Selector=decltype(std::bind(defer<join_outer_selector>(), std::cref(linq::declval<Lookup>()), protect(linq::declval<OuterKeySelector>(), protect(linq::declval<ResultSelector>()))))>
+// struct group_join_range
+// : boost::iterator_range<boost::transform_iterator<Selector, boost::range_iterator<typename std::decay<Outer>::type> > >
+// {
+//     typedef boost::iterator_range<boost::transform_iterator<Selector, boost::range_iterator<typename std::decay<Outer>::type> > > base;
+//     // typedef decltype(std::bind(defer<join_outer_selector>(), std::cref(linq::declval<Lookup>()), protect(linq::declval<OuterKeySelector>(), protect(linq::declval<ResultSelector>())))) Selector;
+
+
+//     Outer outer;
+//     Lookup lookup;
+//     Selector selector;
+
+//     group_join_range(Outer outer, Lookup l, OuterKeySelector outer_key_selector, ResultSelector result_selector)
+//     : outer(outer), 
+//     lookup(l), 
+//     selector
+//     (
+//         std::bind
+//         (
+//             defer<join_outer_selector>(), 
+//             std::cref(lookup), 
+//             protect(outer_key_selector), 
+//             protect(result_selector), 
+//             _1
+//         )
+//     )
+//     {}
+// };
 
 // TODO: Add a way to statically assert that all function objects can be called
 // with the correct type and display an error

@@ -17,6 +17,26 @@
 //
 //
 
+#define LINQ_NARGS(...) \
+         LINQ_DETAIL_NARG((__VA_ARGS__,LINQ_DETAIL_RSEQ_N()))
+#define LINQ_DETAIL_NARG(args) \
+         LINQ_DETAIL_ARG_N args
+#define LINQ_DETAIL_ARG_N( \
+          _1, _2, _3, _4, _5, _6, _7, _8, _9,_10, \
+         _11,_12,_13,_14,_15,_16,_17,_18,_19,_20, \
+         _21,_22,_23,_24,_25,_26,_27,_28,_29,_30, \
+         _31,_32,_33,_34,_35,_36,_37,_38,_39,_40, \
+         _41,_42,_43,_44,_45,_46,_47,_48,_49,_50, \
+         _51,_52,_53,_54,_55,_56,_57,_58,_59,_60, \
+         _61,_62,_63,N,...) N
+#define LINQ_DETAIL_RSEQ_N() \
+         63,62,61,60,                   \
+         59,58,57,56,55,54,53,52,51,50, \
+         49,48,47,46,45,44,43,42,41,40, \
+         39,38,37,36,35,34,33,32,31,30, \
+         29,28,27,26,25,24,23,22,21,20, \
+         19,18,17,16,15,14,13,12,11,10, \
+         9,8,7,6,5,4,3,2,1,0 
 
 //
 // LINQ_IS_PAREN is used to detect if the first token is a parenthesis.
@@ -34,6 +54,52 @@
 #define LINQ_IS_PAREN_CHECK_I(x) LINQ_IS_PAREN_CHECK_RES(LINQ_IS_PAREN_CHECK_II x)
 #define LINQ_IS_PAREN_CHECK_N(...) LINQ_IS_PAREN_CHECK_I((__VA_ARGS__))
 #endif
+
+//
+// LINQ_MSVC_INVOKE invokes a macro on msvc
+//
+#define LINQ_MSVC_INVOKE BOOST_PP_CAT(LINQ_MSVC_INVOKE_, BOOST_PP_AUTO_REC(LINQ_DETAIL_MSVC_INVOKE_P, 8))
+
+#define LINQ_DETAIL_MSVC_INVOKE_P(n) LINQ_IS_PAREN( LINQ_MSVC_INVOKE_ ## n((),) )
+
+#define LINQ_MSVC_INVOKE_1(macro, args) LINQ_MSVC_INVOKE_I_1(macro, args)
+#define LINQ_MSVC_INVOKE_2(macro, args) LINQ_MSVC_INVOKE_I_2(macro, args)
+#define LINQ_MSVC_INVOKE_3(macro, args) LINQ_MSVC_INVOKE_I_3(macro, args)
+#define LINQ_MSVC_INVOKE_4(macro, args) LINQ_MSVC_INVOKE_I_4(macro, args)
+#define LINQ_MSVC_INVOKE_5(macro, args) LINQ_MSVC_INVOKE_I_5(macro, args)
+#define LINQ_MSVC_INVOKE_6(macro, args) LINQ_MSVC_INVOKE_I_6(macro, args)
+#define LINQ_MSVC_INVOKE_7(macro, args) LINQ_MSVC_INVOKE_I_7(macro, args)
+#define LINQ_MSVC_INVOKE_8(macro, args) LINQ_MSVC_INVOKE_I_8(macro, args)
+
+#define LINQ_MSVC_INVOKE_I_1(macro, args) LINQ_MSVC_INVOKE_X_1(macro args)
+#define LINQ_MSVC_INVOKE_I_2(macro, args) LINQ_MSVC_INVOKE_X_2(macro args)
+#define LINQ_MSVC_INVOKE_I_3(macro, args) LINQ_MSVC_INVOKE_X_3(macro args)
+#define LINQ_MSVC_INVOKE_I_4(macro, args) LINQ_MSVC_INVOKE_X_4(macro args)
+#define LINQ_MSVC_INVOKE_I_5(macro, args) LINQ_MSVC_INVOKE_X_5(macro args)
+#define LINQ_MSVC_INVOKE_I_6(macro, args) LINQ_MSVC_INVOKE_X_6(macro args)
+#define LINQ_MSVC_INVOKE_I_7(macro, args) LINQ_MSVC_INVOKE_X_7(macro args)
+#define LINQ_MSVC_INVOKE_I_8(macro, args) LINQ_MSVC_INVOKE_X_8(macro args)
+
+#define LINQ_MSVC_INVOKE_X_1(x) x
+#define LINQ_MSVC_INVOKE_X_2(x) x
+#define LINQ_MSVC_INVOKE_X_3(x) x
+#define LINQ_MSVC_INVOKE_X_4(x) x
+#define LINQ_MSVC_INVOKE_X_5(x) x
+#define LINQ_MSVC_INVOKE_X_6(x) x
+#define LINQ_MSVC_INVOKE_X_7(x) x
+#define LINQ_MSVC_INVOKE_X_8(x) x
+
+
+#define LINQ_CONTAINS(set, x) BOOST_PP_IIF(LINQ_IS_PAREN(x), LINQ_CONTAINS_PAREN, LINQ_CONTAINS_TOKEN)(set, x)
+#define LINQ_CONTAINS_PAREN(set, x) 0
+#define LINQ_CONTAINS_TOKEN(set, x) LINQ_IS_PAREN(BOOST_PP_CAT(set, x))
+
+#define LINQ_FIND(set, x, default_) BOOST_PP_IIF(LINQ_IS_PAREN(x), LINQ_FIND_PAREN, LINQ_FIND_TOKEN)(set, x, default_)
+#define LINQ_FIND_PAREN(set, x, default_) (default_, x)
+#define LINQ_FIND_TOKEN(set, x, default_) LINQ_FIND_TOKEN_I(x, BOOST_PP_CAT(set, x), default_)
+#define LINQ_FIND_TOKEN_I(x, transformed, default_) BOOST_PP_IIF(LINQ_IS_PAREN(transformed), LINQ_FIND_FOUND, LINQ_FIND_NOT_FOUND)(x, transformed, default_)
+#define LINQ_FIND_FOUND(x, transformed, default_) (LINQ_PLACE(transformed), LINQ_EAT transformed)
+#define LINQ_FIND_NOT_FOUND(x, transformed, default_) (default_, x)
 
 //
 // LINQ_IS_EMPTY will expands to 1 if the parameter is empty, otherwise
@@ -74,6 +140,8 @@
 #define LINQ_EMPTY(...)
 #define LINQ_EAT(...)
 #define LINQ_REM(...) __VA_ARGS__
+#define LINQ_OUT(x) LINQ_REM x 
+#define LINQ_POP(x) LINQ_EAT x 
 #define LINQ_EXPAND(...) __VA_ARGS__
 #define LINQ_DEFER(...) __VA_ARGS__ LINQ_EMPTY()
 #define LINQ_OBSTRUCT(...) __VA_ARGS__ LINQ_DEFER(LINQ_EMPTY)()
@@ -169,9 +237,8 @@ LINQ_TO_SEQ_REPLACE(prev, LINQ_KEYWORD(tail))
 #ifndef _MSC_VER
 #define LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE(x) LINQ_SEQ_SPLIT_OP x
 #else
-#define LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE(x) LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE_I x
-#define LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE_I(...) LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE_II((__VA_ARGS__))
-#define LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE_II(x) LINQ_SEQ_SPLIT_OP x
+// MSVC workarounds
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_INVOKE(x) LINQ_MSVC_INVOKE(LINQ_SEQ_SPLIT_OP, x)
 #endif
 #define LINQ_SEQ_SPLIT_OP(s, x, pred, data, seq, elem) BOOST_PP_IF(pred(s, data, x), LINQ_SEQ_SPLIT_OP_TRUE, LINQ_SEQ_SPLIT_OP_FALSE)(x, pred, data, seq, elem)
 #define LINQ_SEQ_SPLIT_OP_TRUE(x, pred, data, seq, elem) BOOST_PP_IIF(LINQ_IS_PAREN(elem), \
@@ -181,9 +248,8 @@ LINQ_TO_SEQ_REPLACE(prev, LINQ_KEYWORD(tail))
 #ifndef _MSC_VER
 #define LINQ_SEQ_SPLIT_FOLD_LEFT_M(x) LINQ_SEQ_SPLIT_M x
 #else
-#define LINQ_SEQ_SPLIT_FOLD_LEFT_M_X(x) x
-#define LINQ_SEQ_SPLIT_FOLD_LEFT_M_N(x) LINQ_SEQ_SPLIT_FOLD_LEFT_M_X(LINQ_SEQ_SPLIT_FOLD_LEFT_M_X(LINQ_SEQ_SPLIT_FOLD_LEFT_M_X(LINQ_SEQ_SPLIT_FOLD_LEFT_M_X(x))))
-#define LINQ_SEQ_SPLIT_FOLD_LEFT_M(x) LINQ_SEQ_SPLIT_FOLD_LEFT_M_N(LINQ_SEQ_SPLIT_M x)
+// MSVC workarounds
+#define LINQ_SEQ_SPLIT_FOLD_LEFT_M(x) LINQ_MSVC_INVOKE(LINQ_SEQ_SPLIT_M, x)
 #endif
 #define LINQ_SEQ_SPLIT_M(pred, data, seq, elem) seq BOOST_PP_IIF(LINQ_IS_PAREN(elem), (elem),)
 

@@ -12,6 +12,7 @@
 #include <linq/extensions/detail/function_object.h>
 #include <boost/range.hpp>
 #include <linq/utility.h>
+#include <linq/traits.h>
 #include <set>
 
 namespace linq { 
@@ -53,6 +54,11 @@ struct ordered_range
     }
 
 };
+
+template<class Iterator, class Compare>
+struct is_bindable_range<ordered_range<Iterator, Compare> >
+: boost::mpl::bool_<true>
+{};
 
 template<class Iterator, class Compare>
 ordered_range<Iterator, function_object<Compare> > make_ordered_range(Iterator first, Iterator last, Compare c)

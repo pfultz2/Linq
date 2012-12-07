@@ -50,6 +50,7 @@
 #include <linq/extensions/then_by_descending.h>
 #include <linq/extensions/to_container.h>
 #include <linq/extensions/to_string.h>
+#include <linq/extensions/union.h>
 #include <linq/extensions/values.h>
 #include <linq/extensions/where.h>
 #include <linq/extensions/zip.h>

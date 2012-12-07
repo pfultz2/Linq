@@ -11,7 +11,8 @@
 #include <boost/type_traits.hpp>
 #include <boost/mpl/has_xxx.hpp>
 #include <boost/utility.hpp>
-#include  <boost/range/has_range_iterator.hpp> 
+#include <boost/range/has_range_iterator.hpp> 
+#include <boost/range/iterator_range.hpp> 
 
 
 namespace linq {
@@ -74,6 +75,54 @@ struct is_range<T&>
 template<class T>
 struct is_range<T&&>
 : is_range<T>
+{};
+
+
+namespace detail {
+template<class T, class Enable = void>
+struct is_iterator_range
+: boost::mpl::bool_<false>
+{};
+
+template<class T>
+struct is_iterator_range<T&>
+: is_iterator_range<T>
+{};
+
+template<class T>
+struct is_iterator_range<T&&>
+: is_iterator_range<T>
+{};
+
+template<class T>
+struct is_iterator_range<T, typename std::enable_if<is_range<T>::value && !boost::is_reference<T>::value>::type>
+: boost::is_base_of<boost::iterator_range<typename boost::range_iterator<T>::type>, T>
+{};
+}
+
+template<class T, class Enable = void>
+struct is_bindable_range
+: boost::mpl::bool_<false>
+{};
+
+template<class T>
+struct is_bindable_range<T&&>
+: is_bindable_range<T>
+{};
+
+template<class T>
+struct is_bindable_range<T&>
+: is_range<T>
+{};
+
+template<class T>
+struct is_bindable_range<T, typename std::enable_if<detail::is_iterator_range<T>::value && !boost::is_reference<T>::value>::type>
+: boost::mpl::bool_<true>
+{};
+
+template<class T>
+struct is_bindable_range<std::pair<T, T> >
+: boost::mpl::bool_<true>
 {};
 
 }

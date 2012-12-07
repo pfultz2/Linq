@@ -27,7 +27,7 @@ struct join_t
         template<class ResultSelector, class Key, class Value>
         auto operator()(ResultSelector rs, Key && k, Value && v) const LINQ_RETURNS
         (
-            v | linq::select(std::bind(rs, linq::detail::auto_ref(k), linq::_1))
+            v | linq::select(std::bind(rs, k, linq::_1))
         );
 
     };

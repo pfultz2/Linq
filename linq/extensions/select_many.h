@@ -15,54 +15,6 @@
 
 namespace linq { 
 
-namespace detail {
-
-template<class T, class Enable = void>
-struct is_iterator_range
-: boost::mpl::bool_<false>
-{};
-
-template<class T>
-struct is_iterator_range<T&>
-: is_iterator_range<T>
-{};
-
-template<class T>
-struct is_iterator_range<T&&>
-: is_iterator_range<T>
-{};
-
-template<class T>
-struct is_iterator_range<T, typename std::enable_if<is_range<T>::value && !boost::is_reference<T>::value>::type>
-: boost::is_base_of<boost::iterator_range<typename boost::range_iterator<T>::type>, T>
-{};
-
-}
-
-template<class T, class Enable = void>
-struct is_bindable_range
-: boost::mpl::bool_<false>
-{};
-
-template<class T>
-struct is_bindable_range<T&&>
-: is_bindable_range<T>
-{};
-
-template<class T>
-struct is_bindable_range<T&>
-: is_range<T>
-{};
-
-template<class T>
-struct is_bindable_range<T, typename std::enable_if<detail::is_iterator_range<T>::value && !boost::is_reference<T>::value>::type>
-: boost::mpl::bool_<true>
-{};
-
-template<class T>
-struct is_bindable_range<std::pair<T, T> >
-: boost::mpl::bool_<true>
-{};
 
 // bind_iterator
 template<class OuterIterator, class Selector, class SelectorRange = typename std::decay<typename std::result_of<Selector(typename boost::iterator_reference<OuterIterator>::type)>::type>::type>
@@ -95,7 +47,7 @@ struct bind_iterator
             if (inner_first==inner_last)
             {
                 auto&& r = selector(*iterator);
-                static_assert(is_bindable_range<decltype(r)>::value, "Ranges returned from select_many must be bindable");
+                static_assert(is_bindable_range<decltype(r)>::value, "Ranges returned from select_many selector must be bindable");
                 inner_first = boost::begin(r);
                 inner_last = boost::end(r);
             }
@@ -125,7 +77,7 @@ struct bind_iterator
 template<class Iterator, class Selector>
 bind_iterator<Iterator, Selector> make_bind_iterator(Selector selector, Iterator iterator, Iterator last)
 {
-    static_assert(is_bindable_range<typename std::result_of<Selector(typename boost::iterator_reference<Iterator>::type)>::type>::value, "Ranges returned from select_many must be bindable");
+    static_assert(is_bindable_range<typename std::result_of<Selector(typename boost::iterator_reference<Iterator>::type)>::type>::value, "Ranges returned from select_many selector must be bindable");
     return bind_iterator<Iterator, Selector>(selector, iterator, last);
 }
 

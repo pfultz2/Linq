@@ -18,12 +18,44 @@ struct keys_t
 {
     struct key_selector
     {
+
+        template<class>
+        struct result;
+
+        template<class X, class T>
+        struct result<X(T)>
+        {
+            typedef typename T::first_type type;
+        };
+
+        template<class X, class T>
+        struct result<X(T&&)>
+        {
+            typedef typename T::first_type type;
+        };
+
+        template<class X, class T>
+        struct result<X(T&)>
+        {
+            // typedef typename std::decay<typename T::first_type>::type& type;
+            typedef typename std::add_const<typename std::decay<typename T::first_type>::type>::type& type;
+        };
+
+        template<class X, class T>
+        struct result<X(const T&)>
+        {
+            typedef typename std::add_const<typename std::decay<typename T::first_type>::type>::type& type;
+        };
+
         template<class T>
-        auto operator()(T && x) const LINQ_RETURNS(x.first);
+        typename result<key_selector(T&&)>::type operator()(T && x) const 
+        {
+            return x.first;
+        }
     };
 
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS(r | linq::select(defer<key_selector>()));
+    auto operator()(Range && r) const LINQ_RETURNS(r | linq::select(key_selector()));
 
 };
 }
