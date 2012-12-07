@@ -1,5 +1,6 @@
 
 #include <linq/extensions.h>
+#include <linq/query.h>
 
 #include <boost/assign.hpp>
 #include <string>
@@ -107,6 +108,70 @@ struct name_selector
     auto operator()(T && x) const LINQ_RETURNS
     (x.name);
 };
+
+BOOST_AUTO_TEST_CASE( query_group_by_test )
+{
+    std::vector<person> v = list_of
+    (person("Tom", 25))
+    (person("Bob", 22))
+    (person("Terry", 37))
+    (person("Jerry", 22));
+
+    auto q = LINQ(from(p, v) groupby(p.age, p.name));
+    BOOST_CHECK_EQUAL(1, boost::distance(q.equal_range(25)));
+    BOOST_CHECK_EQUAL(2, boost::distance(q.equal_range(22)));
+    BOOST_CHECK_EQUAL(1, boost::distance(q.equal_range(37)));
+
+    BOOST_CHECK_EQUAL("Tom", q.equal_range(25).first->second);
+    BOOST_CHECK_EQUAL("Terry", q.equal_range(37).first->second);
+    BOOST_CHECK(q.equal_range(22) | linq::values | linq::contains("Bob") );
+    BOOST_CHECK(q.equal_range(22) | linq::values | linq::contains("Jerry") );
+}
+
+BOOST_AUTO_TEST_CASE( query_order_by_test )
+{
+    std::vector<person> people = list_of
+    (person("Tom", 25))
+    (person("Bob", 22))
+    (person("Terry", 37))
+    (person("Jerry", 22));
+
+    std::vector<int> people_age = list_of(22)(22)(25)(37);
+
+    CHECK_SEQ(people_age, LINQ(from(p, people) orderby(p.age) select(p.age)));
+    CHECK_SEQ(people_age, LINQ(from(p, people) orderby(ascending p.age) select(p.age)));
+    CHECK_SEQ(people_age | linq::reverse, LINQ(from(p, people) orderby(descending p.age) select(p.age)));
+}
+
+BOOST_AUTO_TEST_CASE( query_select_test )
+{
+    std::vector<int> v = list_of(1)(2)(3)(4);
+    std::vector<int> r = list_of(3)(6)(9)(12);
+    CHECK_SEQ(r, LINQ(from(i, v) select(i * 3)));
+}
+
+BOOST_AUTO_TEST_CASE( query_then_by_test )
+{
+    std::vector<person> people = list_of
+    (person("Tom", 25))
+    (person("Bob", 22))
+    (person("Terry", 37))
+    (person("Jerry", 22));
+
+    std::vector<std::string> people_name = list_of("Bob")("Jerry")("Tom")("Terry");
+    std::vector<std::string> people_name_d = list_of("Jerry")("Bob")("Tom")("Terry");
+
+    CHECK_SEQ(people_name, LINQ(from(p, people) orderby(p.age, p.name) select(p.name)));
+    CHECK_SEQ(people_name, LINQ(from(p, people) orderby(ascending p.age, ascending p.name) select(p.name)));
+    CHECK_SEQ(people_name_d, LINQ(from(p, people) orderby(p.age, descending p.name) select(p.name)));
+}
+
+BOOST_AUTO_TEST_CASE( query_where_test )
+{
+    std::vector<int> v = list_of(1)(3)(4)(5);
+    std::vector<int> r = list_of(1)(3)(5);
+    CHECK_SEQ(r, LINQ(from(i, v) where(i % 2)));
+}
 
 BOOST_AUTO_TEST_CASE( aggregate_test )
 {
@@ -345,6 +410,8 @@ BOOST_AUTO_TEST_CASE( join_test )
     ("Barry")
     ("Dan");
 
+    // output_range(std::cout, q);
+
     BOOST_CHECK
     (
         (r1 | linq::sequence_equal(q)) ||
@@ -512,6 +579,14 @@ BOOST_AUTO_TEST_CASE( to_container_test )
     std::list<int> l = v | linq::select([](int i) { return i * 3; }) | linq::to_container;
     std::vector<int> r = list_of(3)(6)(9)(12);
     BOOST_CHECK(l | linq::sequence_equal(r));
+}
+
+BOOST_AUTO_TEST_CASE( union_test )
+{
+    std::vector<int> v1 = list_of(1)(3)(5)(7)(9);
+    std::vector<int> v2 = list_of(2)(3)(5)(7)(11);
+    std::vector<int> r = list_of(1)(3)(5)(7)(9)(2)(11);
+    CHECK_SEQ(r, v1 | linq::union_(v2));
 }
 
 // BOOST_AUTO_TEST_CASE( to_string_test )
