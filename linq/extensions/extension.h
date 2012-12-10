@@ -13,6 +13,7 @@
 #include <linq/traits.h>
 #include <linq/extensions/detail/placeholders.h>
 #include <linq/extensions/detail/defer.h>
+#include <linq/extensions/detail/result_of.h>
 #include <utility>
 #include <functional>
 #include <boost/static_assert.hpp>
@@ -37,7 +38,7 @@ struct pipe_closure
     {};
 
     template<class Range>
-    friend typename boost::lazy_enable_if<is_bindable_range<Range>, std::result_of<const F(Range&&)> >::type
+    friend typename boost::lazy_enable_if<is_bindable_range<Range>, linq::result_of<const F(Range&&)> >::type
     operator|(Range&& r, const pipe_closure& p)
     {
         return p.f(std::forward<Range>(r));
@@ -50,25 +51,11 @@ pipe_closure<F> make_pipe_closure(F f)
     return pipe_closure<F>(f);
 }
 
-// template<class F>
-// struct bind_wrapper : sfinae_error<F>
-// {
-//     template<class X>
-//     bind_wrapper(X x) : sfinae_error<F>(x)
-//     {}
-// };
-
 template<class T>
 struct auto_ref_type
 {
     typedef T type;
 };
-
-// template<class T>
-// struct auto_ref_type<T, typename std::enable_if<std::is_bind_expression<typename std::remove_cv<typename std::decay<T>::type>::type>::value>::type>
-// {
-//     typedef bind_wrapper<typename std::remove_cv<typename std::decay<T>::type>::type> type;
-// };
 
 template<class T>
 struct auto_ref_type<T&&>
@@ -80,12 +67,6 @@ struct auto_ref_type<T&>
 {
     typedef std::reference_wrapper<T> type;
 };
-
-// template<class T>ma
-// struct auto_ref_type<const T&, typename std::enable_if<!std::is_bind_expression<T>::value>::type>
-// {
-//     typedef std::reference_wrapper<const T> type;
-// };
 
 
 template<class T>
@@ -101,28 +82,6 @@ const char * auto_ref(char const (& x)[N])
 {
     return x;
 }
-
-// template<class T>
-// struct is_bw
-// : boost::mpl::bool_<false>
-// {};
-
-// template<class T>
-// struct is_bw<bind_wrapper<T> >
-// : boost::mpl::bool_<true>
-// {};
-
-// struct foo
-// {
-//     template<class T, class U>
-//     void operator()(T x, U y) const
-//     {
-//     }
-// };
-
-// static_assert(is_bw<decltype(auto_ref(std::bind(foo(), 1, linq::_1)))>::value, "Error");
-// static_assert(!std::is_bind_expression<decltype(auto_ref(std::bind(foo(), 1, linq::_1)))>::value, "Error");
-// static_assert(!is_bw<decltype(auto_ref(1))>::value, "Error");
 
 }
 
