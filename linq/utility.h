@@ -11,6 +11,7 @@
 #include <utility>
 #include <functional>
 #include <boost/utility/enable_if.hpp>
+#include <iso646.h>
 
 //
 // LINQ_RETURNS for auto return type deduction.
