@@ -24,9 +24,9 @@ struct defer : F
     defer()
     {}
 
-    template<class F>
+    template<class X>
     struct result
-    : linq::result_of<F>
+    : linq::result_of<X>
     {};
 
 };
