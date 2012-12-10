@@ -24,7 +24,7 @@ struct average_t
 };
 }
 namespace {
-range_extension<detail::average_t> average = {};
+range_extension<detail::average_t, true> average = {};
 }
 
 }

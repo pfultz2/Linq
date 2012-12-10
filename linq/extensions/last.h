@@ -26,7 +26,7 @@ struct last_t
 };
 }
 namespace {
-range_extension<detail::last_t> last = {};
+range_extension<detail::last_t, true> last = {};
 }
 
 }

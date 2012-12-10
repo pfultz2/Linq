@@ -31,7 +31,7 @@ struct sum_t
 };
 }
 namespace {
-range_extension<detail::sum_t> sum = {};
+range_extension<detail::sum_t, true> sum = {};
 }
 
 }

@@ -28,7 +28,7 @@ struct any_t
 };
 }
 namespace {
-range_extension<detail::any_t> any = {};
+range_extension<detail::any_t, true> any = {};
 }
 
 }

@@ -29,7 +29,6 @@ namespace linq {
 namespace detail {
 struct na {};
 
-
 template<class F>
 struct pipe_closure
 {
@@ -95,13 +94,10 @@ const char * auto_ref(char const (& x)[N])
         (std::bind(defer<F>(), linq::_1, BOOST_PP_ENUM_ ## z(n, LINQ_RANGE_EXTENSION_AUTO_REF, ~) ) ) \
     ); 
 
-template<class F>
+template<class F, bool Unary=false>
 struct range_extension
 {
     BOOST_PP_REPEAT_FROM_TO_1(1, LINQ_LIMIT_EXTENSION, LINQ_RANGE_EXTENSION_OP, ~)
-    template<class Range>
-    friend auto operator|(Range && r, const range_extension) LINQ_RETURN_REQUIRES(is_bindable_range<Range>)
-    (F()(std::forward<Range>(r)));
 
     range_extension<F>& operator()()
     {
@@ -112,6 +108,17 @@ struct range_extension
     {
         return *this;
     }
+};
+
+template<class Range, class F>
+typename boost::lazy_enable_if
+<
+    is_bindable_range<Range>, 
+    linq::result_of<const F(Range&&)> 
+>::type
+operator|(Range && r, const range_extension<F, true>)
+{
+    return F()(std::forward<Range>(r));
 };
 
 }

@@ -37,7 +37,7 @@ struct first_t
 };
 }
 namespace {
-range_extension<detail::first_t> first = {};
+range_extension<detail::first_t, true> first = {};
 }
 
 }

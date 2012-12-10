@@ -25,7 +25,7 @@ struct last_or_default_t
 };
 }
 namespace {
-range_extension<detail::last_or_default_t> last_or_default = {};
+range_extension<detail::last_or_default_t, true> last_or_default = {};
 }
 
 }

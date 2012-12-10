@@ -36,7 +36,7 @@ struct count_t
 };
 }
 namespace {
-range_extension<detail::count_t> count = {};
+range_extension<detail::count_t, true> count = {};
 }
 
 }

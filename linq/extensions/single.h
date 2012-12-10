@@ -30,7 +30,7 @@ struct single_t
 };
 }
 namespace {
-range_extension<detail::single_t> single = {};
+range_extension<detail::single_t, true> single = {};
 }
 
 }

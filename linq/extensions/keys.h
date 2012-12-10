@@ -60,7 +60,7 @@ struct keys_t
 };
 }
 namespace {
-range_extension<detail::keys_t> keys = {};
+range_extension<detail::keys_t, true> keys = {};
 }
 
 }

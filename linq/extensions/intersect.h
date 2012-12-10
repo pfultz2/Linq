@@ -40,7 +40,7 @@ struct intersect_t
 };
 }
 namespace {
-range_extension<detail::intersect_t> intersect = {};
+range_extension<detail::intersect_t, true> intersect = {};
 }
 
 }

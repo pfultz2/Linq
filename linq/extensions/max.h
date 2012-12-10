@@ -32,7 +32,7 @@ struct max_t
 };
 }
 namespace {
-range_extension<detail::max_t> max = {};
+range_extension<detail::max_t, true> max = {};
 }
 
 }

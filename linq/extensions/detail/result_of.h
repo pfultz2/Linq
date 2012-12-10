@@ -11,36 +11,26 @@
 #include <linq/utility.h>
 #include <utility>
 
-namespace linq { namespace detail {
+#ifndef LINQ_RESULT_OF_LIMIT
+#define LINQ_RESULT_OF_LIMIT 8
+#endif
 
-template<class T>
-struct unwrap
-{
-    typedef T type;
-};
-
-template<class T>
-struct unwrap<std::reference_wrapper<T> >
-{
-    typedef T& type;
-};
-
-}
+namespace linq { 
 
 template<class F>
 struct result_of;
 
-template<class F, class T>
-struct result_of<F(T)>
-{
-    typedef typename detail::unwrap<decltype(linq::declval<F>()(linq::declval<T>()))>::type type;
-};
+#define LINQ_RESULT_OF_M(z, n, data) linq::declval<T ## n>()
+#define LINQ_RESULT_OF_EACH(z, n, data) \
+template<class X BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS_Z(z, n, class T)> \
+struct result_of<X(BOOST_PP_ENUM_PARAMS_Z(z, n, T))> \
+{ \
+    typedef decltype(linq::declval<X>()(BOOST_PP_ENUM_ ## z(n, LINQ_RESULT_OF_M, ~) )) type;\
+}; 
 
-template<class F, class T, class U>
-struct result_of<F(T, U)>
-{
-    typedef typename detail::unwrap<decltype(linq::declval<F>()(linq::declval<T>(), linq::declval<U>()))>::type type;
-};
+BOOST_PP_REPEAT_1(LINQ_RESULT_OF_LIMIT, LINQ_RESULT_OF_EACH, ~)
+
+
 
 }
 

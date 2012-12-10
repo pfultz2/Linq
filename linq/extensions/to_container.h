@@ -42,7 +42,7 @@ struct to_container_t
 };
 }
 namespace {
-range_extension<detail::to_container_t> to_container = {};
+range_extension<detail::to_container_t, true> to_container = {};
 }
 
 }

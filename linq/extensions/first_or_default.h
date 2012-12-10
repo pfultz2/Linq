@@ -31,7 +31,7 @@ struct first_or_default_t
 };
 }
 namespace {
-range_extension<detail::first_or_default_t> first_or_default = {};
+range_extension<detail::first_or_default_t, true> first_or_default = {};
 }
 
 }

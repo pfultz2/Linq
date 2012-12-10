@@ -58,7 +58,7 @@ struct values_t
 };
 }
 namespace {
-range_extension<detail::values_t> values = {};
+range_extension<detail::values_t, true> values = {};
 }
 
 }

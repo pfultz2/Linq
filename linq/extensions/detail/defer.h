@@ -10,6 +10,7 @@
 
 #include <linq/pp.h>
 #include <linq/utility.h>
+#include <linq/extensions/detail/result_of.h>
 
 #ifndef LINQ_DEFER_LIMIT
 #define LINQ_DEFER_LIMIT 8
@@ -23,18 +24,10 @@ struct defer : F
     defer()
     {}
 
-    template<class>
-    struct result;
-
-#define LINQ_DEFER_M(z, n, data) linq::declval<T ## n>()
-#define LINQ_DEFER_EACH(z, n, data) \
-    template<class X BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS_Z(z, n, class T)> \
-    struct result<X(BOOST_PP_ENUM_PARAMS_Z(z, n, T))> \
-    { \
-        typedef decltype(linq::declval<X>()(BOOST_PP_ENUM_ ## z(n, LINQ_DEFER_M, ~) )) type;\
-    }; 
-
-BOOST_PP_REPEAT_1(LINQ_DEFER_LIMIT, LINQ_DEFER_EACH, ~)
+    template<class F>
+    struct result
+    : linq::result_of<F>
+    {};
 
 };
 

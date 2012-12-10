@@ -100,7 +100,7 @@ struct default_if_empty_t
 };
 }
 namespace {
-range_extension<detail::default_if_empty_t> default_if_empty = {};
+range_extension<detail::default_if_empty_t, true> default_if_empty = {};
 }
 
 }

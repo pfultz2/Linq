@@ -32,7 +32,7 @@ struct min_t
 };
 }
 namespace {
-range_extension<detail::min_t> min = {};
+range_extension<detail::min_t, true> min = {};
 }
 
 }

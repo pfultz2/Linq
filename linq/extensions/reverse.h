@@ -23,7 +23,7 @@ struct reverse_t
 };
 }
 namespace {
-range_extension<detail::reverse_t> reverse = {};
+range_extension<detail::reverse_t, true> reverse = {};
 }
 
 }

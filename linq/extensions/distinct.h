@@ -40,7 +40,7 @@ struct distinct_t
 };
 }
 namespace {
-range_extension<detail::distinct_t> distinct = {};
+range_extension<detail::distinct_t, true> distinct = {};
 }
 
 }
