@@ -9,6 +9,7 @@
 #define LINQ_GUARD_DETAIL_RESULT_OF_H
 
 #include <linq/utility.h>
+#include <linq/pp.h>
 #include <utility>
 
 #ifndef LINQ_RESULT_OF_LIMIT
