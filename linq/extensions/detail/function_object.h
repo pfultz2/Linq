@@ -79,9 +79,11 @@ struct function_object
         return (*f)(std::forward<T>(x));
     }
 
-    // template<class T>
-    // auto operator()(T && x) LINQ_RETURNS((*f)(std::forward<T>(x)));
-
+    template<class T>
+    typename result<Fun(T)>::type operator()(T && x) 
+    {
+        return (*f)(std::forward<T>(x));
+    }
 
     template<class T, class U>
     typename result<const Fun(T&&, U&&)>::type operator()(T && x, U && y) const 
@@ -89,8 +91,11 @@ struct function_object
         return (*f)(std::forward<T>(x), std::forward<U>(y));
     }
 
-    // template<class T, class U>
-    // auto operator()(T && x, U && y) LINQ_RETURNS((*f)(std::forward<T>(x), std::forward<U>(y)));
+    template<class T, class U>
+    typename result<Fun(T&&, U&&)>::type operator()(T && x, U && y) 
+    {
+        return (*f)(std::forward<T>(x), std::forward<U>(y));
+    }
 };
 
 template<class F>
