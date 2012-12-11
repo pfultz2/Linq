@@ -9,6 +9,7 @@
 #define LINQ_GUARD_EXTENSIONS_DISTINCT_H
 
 #include <linq/extensions/extension.h>
+#include <linq/extensions/detail/set_filter_iterator.h>
 
 namespace linq { 
 
@@ -23,7 +24,7 @@ struct distinct_t
         template<class T, class Set>
         bool operator()(const T& x, Set& s) const
         {
-            if (s.find(x) != s.end())
+            if (s.find(x) == s.end())
             {
                 s.insert(x);
                 return true;
