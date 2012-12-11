@@ -26,35 +26,28 @@ namespace linq {
 //
 namespace detail {
 
-// template<class T>
-// struct no_volatile
-// : boost::mpl::bool_<true>
-// {};
+template<class Lookup>
+struct join_value_selector
+{
+    Lookup lookup;
 
-// template<class T>
-// struct no_volatile<volatile T>
-// : boost::mpl::bool_<false>
-// {};
+    join_value_selector(Lookup lookup)
+    : lookup(lookup)
+    {}
 
-// template<class T>
-// struct no_volatile<T&>
-// : no_volatile<T>
-// {};
+    template<class T>
+    auto operator()(T && x) const LINQ_RETURNS
+    (x.second);
+};
 
-// template<class T>
-// struct no_volatile<T&&>
-// : no_volatile<T>
-// {};
+template<class Lookup>
+join_value_selector < Lookup >
+make_join_value_selector (Lookup lookup)
+{
+    return join_value_selector < Lookup >
+    (lookup);
+}
 
-// struct join_inner_selector
-// {
-
-//     template<class InnerKeySelector, class T>
-//     auto operator()(InnerKeySelector && is, T && x) const LINQ_RETURNS
-//     (
-//         std::make_pair( is(std::forward<T>(x)), std::forward<T>(x) )
-//     );
-// };
 
 template<class InnerKeySelector>
 struct join_inner_selector
@@ -93,9 +86,9 @@ struct join_outer_selector
 
     template<class T>
     auto operator()(T && x) const 
-    -> decltype(declval<const ResultKeySelector>()(std::forward<T>(x), declval<const Lookup>().equal_range(declval<const OuterKeySelector>()(std::forward<T>(x))) | linq::values))
+    -> decltype(declval<const ResultKeySelector>()(std::forward<T>(x), declval<const Lookup>()->equal_range(declval<const OuterKeySelector>()(std::forward<T>(x))) | linq::select(make_join_value_selector(declval<const Lookup>()))))
     {
-        return rs(std::forward<T>(x), inner_lookup.equal_range(os(std::forward<T>(x))) | linq::values);
+        return rs(std::forward<T>(x), inner_lookup->equal_range(os(std::forward<T>(x))) | linq::select(make_join_value_selector(inner_lookup)));
     };
 };
 
@@ -106,17 +99,6 @@ make_join_outer_selector (Lookup inner_lookup, OuterKeySelector os, ResultKeySel
     return join_outer_selector < Lookup, OuterKeySelector, ResultKeySelector >
     (inner_lookup, os, rs);
 }
-
-
-// struct join_outer_selector
-// {
-
-//     template<class Lookup, class OuterKeySelector, class ResultKeySelector, class T>
-//     auto operator()(const Lookup & inner_lookup, OuterKeySelector os, ResultKeySelector rs, T && x) const LINQ_RETURNS
-//     (
-//         rs(std::forward<T>(x), inner_lookup.equal_range(os(std::forward<T>(x))) | linq::values)
-//     );
-// };
 
 // TODO: Add a way to statically assert that all function objects can be called
 // with the correct type and display an error
@@ -129,7 +111,7 @@ struct group_join_t
         (
             make_join_outer_selector
             (
-                make_map(inner | linq::select(make_join_inner_selector(inner_key_selector))), 
+                make_shared_map(inner | linq::select(make_join_inner_selector(inner_key_selector))), 
                 outer_key_selector, 
                 result_selector
             )
