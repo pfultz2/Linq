@@ -12,6 +12,7 @@
 #include <linq/traits.h>
 #include <boost/range.hpp>
 #include <boost/unordered_map.hpp>
+#include <memory>
 
 namespace linq { 
 
@@ -20,6 +21,10 @@ namespace detail {
 template<class Range>
 auto make_map(Range && r) LINQ_RETURN_REQUIRES(is_range<Range>)
 (boost::unordered_multimap<decltype(boost::begin(r)->first), decltype(boost::begin(r)->second)>(boost::begin(r), boost::end(r)));
+
+template<class Range>
+auto make_shared_map(Range && r) LINQ_RETURN_REQUIRES(is_range<Range>)
+(std::make_shared<boost::unordered_multimap<decltype(boost::begin(r)->first), decltype(boost::begin(r)->second)> >(boost::begin(r), boost::end(r)));
 
 template<class Range, class Compare>
 auto make_map(Range && r, Compare c) LINQ_RETURN_REQUIRES(is_range<Range>)
