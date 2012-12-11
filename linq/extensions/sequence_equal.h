@@ -25,8 +25,9 @@ bool equal ( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2,
       return false;
     ++first1; ++first2;
   }
-  return true;
+  return first2 == last2;
 }
+
 struct sequence_equal_t
 {
     template<class R1, class R2>
