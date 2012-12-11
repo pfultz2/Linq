@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE( distinct_test )
 {
     std::vector<int> v = list_of(1)(2)(2)(3)(2)(4)(5)(5);
     std::vector<int> d = list_of(1)(2)(3)(4)(5);
-    BOOST_CHECK(v | linq::distinct | linq::sequence_equal(d));
+    CHECK_SEQ(d, v | linq::distinct);
 }
 
 BOOST_AUTO_TEST_CASE( element_at_test )
@@ -586,6 +586,11 @@ BOOST_AUTO_TEST_CASE( union_test )
     std::vector<int> v1 = list_of(1)(3)(5)(7)(9);
     std::vector<int> v2 = list_of(2)(3)(5)(7)(11);
     std::vector<int> r = list_of(1)(3)(5)(7)(9)(2)(11);
+
+    std::vector<int> x = list_of(1)(3)(5)(7)(9)(2)(3)(5)(7)(11);
+    CHECK_SEQ(x, v1 | linq::concat(v2));
+    CHECK_SEQ(r, x | linq::distinct);
+
     CHECK_SEQ(r, v1 | linq::union_(v2));
 }
 
