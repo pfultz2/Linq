@@ -48,9 +48,9 @@ struct pipe_closure<F(BOOST_PP_ENUM_PARAMS_Z(z, n, T))> \
     \
     template<class Range> \
     friend typename boost::lazy_enable_if<is_bindable_range<Range>, linq::result_of<F(Range&&, BOOST_PP_ENUM_PARAMS_Z(z, n, T))> >::type \
-    operator|(Range&& r, pipe_closure p) \
+    operator|(Range&& r, pipe_closure && p) \
     { \
-        return F()(std::forward<Range>(r), BOOST_PP_ENUM_PARAMS_Z(z, n, p.x)); \
+        return F()(std::forward<Range>(r), BOOST_PP_ENUM_ ## z(n, LINQ_RANGE_EXTENSION_FORWARD_P, ~)); \
     } \
 };
 BOOST_PP_REPEAT_FROM_TO_1(1, LINQ_LIMIT_EXTENSION, LINQ_RANGE_EXTENSION_PIPE_CLOSURE, ~)
