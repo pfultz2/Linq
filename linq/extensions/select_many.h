@@ -17,7 +17,11 @@ namespace linq {
 
 
 // bind_iterator
-template<class OuterIterator, class Selector, class SelectorRange = typename std::decay<typename std::result_of<Selector(typename boost::iterator_reference<OuterIterator>::type)>::type>::type>
+template<
+class OuterIterator, 
+class Selector, 
+class SelectorRangeRef=typename std::result_of<Selector(typename boost::iterator_reference<OuterIterator>::type)>::type, 
+class SelectorRange = typename std::decay<SelectorRangeRef>::type>
 struct bind_iterator
 : boost::iterator_facade
 <
@@ -37,19 +41,33 @@ struct bind_iterator
 
     bind_iterator(Selector selector, OuterIterator iterator, OuterIterator last) : selector(selector), iterator(iterator), last(last)
     {
-        this->select();
+        this->select_first();
     }
 
+    void select_first()
+    {
+        if (iterator!=last)
+        {
+            this->inner_select();
+            if (inner_first==inner_last) this->select();
+        }
+    }
+
+    void inner_select()
+    {
+        auto&& r = selector(*iterator);
+        static_assert(is_bindable_range<decltype(r)>::value, "Ranges returned from select_many selector must be bindable");
+        inner_first = boost::begin(r);
+        inner_last = boost::end(r);
+    }
+    
     void select()
     {
         for(;iterator!=last;iterator++)
         {
             if (inner_first==inner_last)
             {
-                auto&& r = selector(*iterator);
-                static_assert(is_bindable_range<decltype(r)>::value, "Ranges returned from select_many selector must be bindable");
-                inner_first = boost::begin(r);
-                inner_last = boost::end(r);
+                this->inner_select();
             }
             else inner_first++;
             for(;inner_first!=inner_last;inner_first++)
@@ -69,6 +87,8 @@ struct bind_iterator
 
     typename boost::range_reference<SelectorRange >::type dereference() const
     {
+        assert(iterator!=last);
+        assert(inner_first != inner_last);
         return *inner_first;
     }
 
