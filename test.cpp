@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE( query_group_by_test )
     (person("Terry", 37))
     (person("Jerry", 22));
 
-    auto q = LINQ(from(p, v) groupby(p.age, p.name));
+    auto q = LINQ(from(p, v) group(p.age, p.name));
     BOOST_CHECK_EQUAL(1, boost::distance(q.equal_range(25)));
     BOOST_CHECK_EQUAL(2, boost::distance(q.equal_range(22)));
     BOOST_CHECK_EQUAL(1, boost::distance(q.equal_range(37)));
@@ -141,6 +141,20 @@ BOOST_AUTO_TEST_CASE( query_order_by_test )
     CHECK_SEQ(people_age, LINQ(from(p, people) orderby(p.age) select(p.age)));
     CHECK_SEQ(people_age, LINQ(from(p, people) orderby(ascending p.age) select(p.age)));
     CHECK_SEQ(people_age | linq::reverse, LINQ(from(p, people) orderby(descending p.age) select(p.age)));
+}
+
+BOOST_AUTO_TEST_CASE( query_select_many_test )
+{
+    std::vector<student> students = list_of
+    (student("Bob", list_of(90)(100)(75)))
+    (student("Tom", list_of(92)(81)(70)))
+    (student("Terry", list_of(105)(98)(94)));
+    std::vector<int> r = list_of(90)(100)(75)
+    (92)(81)(70)
+    (105)(98)(94);
+
+    auto q = LINQ(from(s, students) from(g, s.grades) select(g));
+    CHECK_SEQ(r, q);
 }
 
 BOOST_AUTO_TEST_CASE( query_select_test )

@@ -74,7 +74,7 @@ struct let
 //
 #define LINQ_WHERE(var, col, ...) linq::where(LINQ_LAMBDA(var, col)(__VA_ARGS__))
 #define LINQ_SELECT(var, col, ...) linq::select(LINQ_LAMBDA(var, col)(__VA_ARGS__))
-#define LINQ_GROUPBY(var, col, key, x) linq::group_by(LINQ_LAMBDA(var, col)(key), LINQ_LAMBDA(var, col)(x))
+#define LINQ_GROUP(var, col, key, x) linq::group_by(LINQ_LAMBDA(var, col)(key), LINQ_LAMBDA(var, col)(x))
 
 
 #define LINQ_ORDERBY(var, col, ...) LINQ_ORDERBY_I(var, col, BOOST_PP_TUPLE_TO_SEQ(LINQ_NARGS(__VA_ARGS__), (__VA_ARGS__)))
@@ -105,7 +105,7 @@ struct let
 // Keywords used by linq
 //
 #define LINQ_KEYWORD_from (from)
-#define LINQ_KEYWORD_groupby (LINQ_GROUPBY)
+#define LINQ_KEYWORD_group (LINQ_GROUP)
 #define LINQ_KEYWORD_into (into)
 #define LINQ_KEYWORD_join (join)
 #define LINQ_KEYWORD_on (on)
