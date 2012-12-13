@@ -19,6 +19,7 @@ using boost::assign::map_list_of;
 
 struct output_elem
 {
+    typedef void result_type;
     template<class Stream, class T>
     void operator()(Stream && s, const T& x)
     {
@@ -30,7 +31,7 @@ template<class Stream, class Range>
 void output_range(Stream && s, Range && r)
 {
     s << "(";
-    std::for_each(boost::begin(r), boost::end(r), std::bind(output_elem(), std::ref(s), std::placeholders::_1));
+    std::for_each(boost::begin(r), boost::end(r), boost::bind(output_elem(), boost::ref(s), boost::arg<1>()));
     s << ")";
 }
 
