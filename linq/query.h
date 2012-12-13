@@ -212,6 +212,12 @@ struct let
 //
 #define LINQ_JOIN_KEYWORD_join ()
 
+//
+// Into keyword
+//
+#define LINQ_INTO_KEYWORD_into ()
+
+//
 #define LINQ_FROM(var, col) col LINQ_PIPE() LINQ_SELECT_MANY(var, col)
 
 //
@@ -221,14 +227,6 @@ struct let
 // Expands the parameter, for another preprocessor scan
 #define LINQ_X(...) __VA_ARGS__
 
-// #define LINQ_PROCESS_PAREN(data, x) (LINQ_REM data, LINQ_REM x)
-// #ifndef _MSC_VER
-// #define LINQ_PROCESS_KEYWORD(data, x) | x 
-// #else
-// // MSVC Workarounds
-// #define LINQ_PROCESS_KEYWORD_RES(x) x
-// #define LINQ_PROCESS_KEYWORD(data, x) | LINQ_PROCESS_KEYWORD_RES(x)
-// #endif
 
 #define LINQ_PROCESS_PAREN(data, x) (LINQ_REM data, LINQ_REM x)
 #define LINQ_PROCESS_KEYWORD(data, x) x 
@@ -240,7 +238,6 @@ struct let
 #define LINQ_TRANSFORM_CLAUSES_TRANSFORM(data, seq) (LINQ_COL data) BOOST_PP_SEQ_TRANSFORM(LINQ_TRANSFORM_CLAUSES_O, data, seq)
 #define LINQ_TRANSFORM_CLAUSES_O(s, data, x) BOOST_PP_IF(LINQ_IS_PAREN(x), LINQ_PROCESS_PAREN, LINQ_PROCESS_KEYWORD)(data, x)
 
-
 // Process from clauses
 // ()((x, col))()((y, x.col))(LINQ_SELECT)((x))
 // SPLIT
@@ -249,9 +246,6 @@ struct let
 // (SELECT_MANY(x, col))((y, x.col)(LINQ_SELECT)(x))
 // NEST
 #define LINQ_TRANSFORM_FROM_CLAUSES(seq) LINQ_SEQ_NEST(LINQ_TRANSFORM_FROM_CLAUSES_EACH(LINQ_SEQ_SPLIT(seq, LINQ_TRANSFORM_FROM_P, data)))
-// #define LINQ_TRANSFORM_FROM_CLAUSES(seq) LINQ_TRANSFORM_FROM_CLAUSES_EACH(LINQ_SEQ_SPLIT(seq, LINQ_TRANSFORM_FROM_P, data))
-// #define LINQ_TRANSFORM_FROM_CLAUSES(seq) LINQ_SEQ_SPLIT(seq, LINQ_TRANSFORM_FROM_P, data)
-// #define LINQ_TRANSFORM_FROM_CLAUSES_EACH(seq) BOOST_PP_SEQ_TRANSFORM(LINQ_TRANSFORM_FROM_CLAUSES_OP, data, seq)
 
 #define LINQ_TRANSFORM_FROM_CLAUSES_EACH(seq) LINQ_TRANSFORM_FROM_CLAUSES_EACH_I(LINQ_TRANSFORM_FROM_CLAUSES_EACH_1 seq)
 #define LINQ_TRANSFORM_FROM_CLAUSES_EACH_I(seq) BOOST_PP_CAT(seq, _END)
@@ -269,28 +263,14 @@ struct let
 #define LINQ_TRANSFORM_FROM_CLAUSES_FROM(x) (LINQ_FROM) x
 #define LINQ_TRANSFORM_FROM_CLAUSES_OTHER(x) LINQ_TRANSFORM_CLAUSES(x)
 
-// #define LINQ_TRANSFORM_FROM_CHECK(seq) BOOST_PP_IF(BOOST_PP_DEC(BOOST_PP_SEQ_SIZE(seq)), LINQ_TRANSFORM_FROM_MULTI, LINQ_TRANSFORM_FROM_SINGLE)(seq)
-// #define LINQ_TRANSFORM_FROM_MULTI(seq) LINQ_SEQ_NEST(LINQ_TRANSFORM_FROM_TRANSFORM(seq))
-// #define LINQ_TRANSFORM_FROM_SINGLE(seq) LINQ_TRANSFORM_CLAUSES(BOOST_PP_SEQ_HEAD(seq))
-
-
-// #define LINQ_TRANSFORM_FROM_TRANSFORM(seq) BOOST_PP_SEQ_TRANSFORM(LINQ_TRANSFORM_FROM_OP, data, BOOST_PP_SEQ_POP_BACK(seq)) (LINQ_TRANSFORM_CLAUSES(LINQ_BACK(seq)))
 
 #define LINQ_TRANSFORM_FROM_P(s, data, x) LINQ_CONTAINS(LINQ_FROM_KEYWORD_, x)
-// #ifndef _MSC_VER
-// #define LINQ_TRANSFORM_FROM_OP(s, data, x) LINQ_FROM LINQ_REM x
-// #else
-// // MSVC Workarounds
-// #define LINQ_TRANSFORM_FROM_OP(s, data, x) LINQ_TRANSFORM_FROM_OP_INVOKE(LINQ_REM x)
-// #define LINQ_TRANSFORM_FROM_OP_INVOKE_X(x) x
-// #define LINQ_TRANSFORM_FROM_OP_INVOKE(x) LINQ_TRANSFORM_FROM_OP_INVOKE_X(LINQ_FROM x)
-// #endif
 
 
 // Transforms the sequence
 #define LINQ_TRANSFORM(seq) LINQ_X(LINQ_TRANSFORM_FROM_CLAUSES(seq))
 // And finally the LINQ macro
-#define LINQ(x) LINQ_TRANSFORM(LINQ_TO_SEQ(x))
+#define LINQ(x) LINQ_TRANSFORM(LINQ_SEQ_REMOVE_EMPTY(LINQ_TO_SEQ(x)))
 
 #ifdef LINQ_TEST_QUERY
 
@@ -298,6 +278,17 @@ struct let
 LINQ_SEQ_NEST((x))
 // LINQ_NEST
 LINQ_SEQ_NEST((f)(y))
+
+// LINQ_FOLD_JOIN
+// LINQ_FOLD_JOIN( ((x, xx)) (LINQ_SELECT)((x, y, x * 3)) )
+// LINQ_FOLD_JOIN( ((x, xx)) (join)((x, xx, y, yy))((x, xx, x, y)) )
+// LINQ_FOLD_JOIN_MERGE((LINQ_JOIN), ((x, xx, y, yy))((x, xx, x, y)))
+// LINQ_FOLD_JOIN( ((x, xx)) (join)((x, xx, y, yy))((x, xx, x, y)) (LINQ_SELECT)((x, xx, x * 3)) )
+
+// LINQ_JOIN
+// LINQ(from(category, categories)
+//    join(prod, products) on(category.ID, prod.CategoryID)
+//    select(prod.name))
 
 // LINQ(from(i, v) select(i * 3))
 LINQ(from(i, v) select(i * 3))
