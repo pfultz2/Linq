@@ -143,7 +143,8 @@ struct let
 #define LINQ_LAMBDA_BLOCK(...) { return (__VA_ARGS__); }
 #define LINQ_LAMBDA_TYPE(col) decltype( linq::query::make_const(*(boost::begin(col))) )
 #define LINQ_LAMBDA_HEADER(var, col) [&](LINQ_LAMBDA_TYPE(col) var)
-#define LINQ_LAMBDA(var, col) LINQ_LAMBDA_HEADER(var, col) LINQ_LAMBDA_BLOCK
+// The `LINQ_EMPTY()` is needed on the end for MSVC
+#define LINQ_LAMBDA(var, col) LINQ_LAMBDA_HEADER(var, col) LINQ_LAMBDA_BLOCK LINQ_EMPTY()
 
 // These macros help in defining the clauses. So instead of writing this:
 //
