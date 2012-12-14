@@ -27,6 +27,17 @@ struct select_t
     template<class F, class It>
     static auto make_transform_iterator(F f, It it) LINQ_RETURNS(boost::transform_iterator<F, It>(it, f));
 
+    template<class>
+    struct result;
+
+    template<class F, class Range, class Selector>
+    struct result<F(Range, Selector)>
+    {
+        typedef typename boost::range_iterator<typename std::remove_reference<Range>::type>::type iterator;
+        typedef function_object<typename std::decay<Selector>::type> fun;
+        typedef boost::iterator_range<boost::transform_iterator<fun, iterator> > type;
+    };
+
     template<class Range, class Selector>
     auto operator()(Range && r, Selector selector) const
     LINQ_RETURNS
