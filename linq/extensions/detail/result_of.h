@@ -18,7 +18,6 @@
 #define LINQ_RESULT_OF_LIMIT 8
 #endif
 
-#define LINQ_NO_STD_RESULT_OF
 #ifndef LINQ_NO_STD_RESULT_OF
 #ifdef _MSC_VER
 #define LINQ_NO_STD_RESULT_OF

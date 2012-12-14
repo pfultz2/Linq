@@ -37,10 +37,24 @@ struct group_by_t
         : key_selector(key_selector), element_selector(element_selector)
         {}
 
-        template<class T>
-        auto operator()(T && x) const -> decltype(std::make_pair(declval<KeySelector>()(x), declval<ElementSelector>()(x)))
+        template<class>
+        struct result;
+
+        template<class F, class T>
+        struct result<F(T)>
         {
-            return std::make_pair(key_selector(x), element_selector(x));
+            typedef std::pair<typename linq::result_of<KeySelector(T)>::type, typename linq::result_of<ElementSelector(T)>::type > type;
+        };
+
+        template<class F, class T>
+        struct result<F(T&&)>
+        : result<F(T)>
+        {};
+
+        template<class T>
+        typename result<map_selector(T&&)>::type operator()(T && x) const
+        {
+            return typename result_of<map_selector(T&&)>::type(key_selector(x), element_selector(x));
         }
     };
 
@@ -52,6 +66,24 @@ struct group_by_t
         (std::forward<KeySelector>(key_selector), std::forward<ElementSelector>(element_selector));
     }
 
+    template<class>
+    struct result;
+
+    template<class F, class Range, class KeySelector, class ElementSelector>
+    struct result<F(Range, KeySelector, ElementSelector)>
+    {
+        typedef typename as_unordered_map<typename result_of<detail::select_t(Range, map_selector<KeySelector, ElementSelector>)>::type >::type type;
+    };
+
+    template<class F, class Range, class KeySelector, class ElementSelector>
+    struct result<F(Range&&, KeySelector, ElementSelector)>
+    : result<F(Range, KeySelector, ElementSelector)>
+    {};
+
+    template<class F, class Range, class KeySelector>
+    struct result<F(Range, KeySelector)>
+    : result<F(Range, KeySelector, identity_selector)>
+    {};
 
     template<class Range, class KeySelector>
     auto operator()(Range && r, KeySelector ks) const LINQ_RETURNS
