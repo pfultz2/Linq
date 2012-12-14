@@ -43,12 +43,17 @@ struct auto_result_of<X(BOOST_PP_ENUM_PARAMS_Z(z, n, T))> \
 BOOST_PP_REPEAT_1(LINQ_RESULT_OF_LIMIT, LINQ_RESULT_OF_EACH, ~)
 
 BOOST_MPL_HAS_XXX_TEMPLATE_DEF(result)
+
+template<class F>
+struct tr1_result_of
+: F::template result<F>
+{};
 }
 
 
 template<class F>
 struct result_of
-: boost::mpl::eval_if<detail::has_result<F>, typename F::template result<F>, detail::auto_result_of<F> >
+: boost::mpl::eval_if<detail::has_result<F>, detail::tr1_result_of<F>, detail::auto_result_of<F> >
 {};
 #else
 
