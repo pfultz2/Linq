@@ -1,6 +1,6 @@
 /*=============================================================================
     Copyright (c) 2012 Paul Fultz II
-    result_of.h
+    auto_result_of.h
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
@@ -11,27 +11,53 @@
 #include <linq/utility.h>
 #include <linq/pp.h>
 #include <utility>
+#include <boost/mpl/has_xxx.hpp>
+#include <boost/mpl/eval_if.hpp>
 
 #ifndef LINQ_RESULT_OF_LIMIT
 #define LINQ_RESULT_OF_LIMIT 8
 #endif
 
+#define LINQ_NO_STD_RESULT_OF
+#ifndef LINQ_NO_STD_RESULT_OF
+#ifdef _MSC_VER
+#define LINQ_NO_STD_RESULT_OF
+#endif
+#endif
+
 namespace linq { 
 
+#ifdef LINQ_NO_STD_RESULT_OF
+namespace detail {
 template<class F>
-struct result_of;
+struct auto_result_of;
 
 #define LINQ_RESULT_OF_M(z, n, data) linq::declval<T ## n>()
 #define LINQ_RESULT_OF_EACH(z, n, data) \
 template<class X BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS_Z(z, n, class T)> \
-struct result_of<X(BOOST_PP_ENUM_PARAMS_Z(z, n, T))> \
+struct auto_result_of<X(BOOST_PP_ENUM_PARAMS_Z(z, n, T))> \
 { \
     typedef decltype(linq::declval<X>()(BOOST_PP_ENUM_ ## z(n, LINQ_RESULT_OF_M, ~) )) type;\
 }; 
 
 BOOST_PP_REPEAT_1(LINQ_RESULT_OF_LIMIT, LINQ_RESULT_OF_EACH, ~)
 
+BOOST_MPL_HAS_XXX_TEMPLATE_DEF(result)
+}
 
+
+template<class F>
+struct result_of
+: boost::mpl::eval_if<detail::has_result<F>, typename F::template result<F>, detail::auto_result_of<F> >
+{};
+#else
+
+template<class F>
+struct result_of
+: std::result_of<F>
+{};
+
+#endif
 
 }
 
