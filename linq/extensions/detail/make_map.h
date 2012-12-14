@@ -29,7 +29,7 @@ template<class R, class Compare>
 struct as_map
 {
     typedef typename boost::range_value<typename std::decay<R>::type>::type value_type;
-    typedef std::multimap<typename value_type::first_type, typename value_type::second_type, Compare> type;
+    typedef std::multimap<typename value_type::first_type, typename value_type::second_type, Compare, std::allocator<std::pair<typename value_type::first_type, typename value_type::second_type> > > type;
 };
 
 
