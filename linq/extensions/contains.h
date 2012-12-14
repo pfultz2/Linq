@@ -22,8 +22,8 @@ namespace detail {
 struct contains_t
 {
     template<class Range, class T>
-    auto operator()(Range && r, T && x) const LINQ_RETURNS
-    ((r | linq::find(x)) != boost::end(r));
+    bool operator()(Range && r, T && x) const
+    { return (r | linq::find(x)) != boost::end(r); };
 };
 }
 namespace {
