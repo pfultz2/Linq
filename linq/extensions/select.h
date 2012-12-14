@@ -39,15 +39,14 @@ struct select_t
     };
 
     template<class Range, class Selector>
-    auto operator()(Range && r, Selector selector) const
-    LINQ_RETURNS
-    (
-        boost::make_iterator_range
+    typename result<select_t(Range&&, Selector)>::type operator()(Range && r, Selector selector) const
+    {
+        return boost::make_iterator_range
         (
             make_transform_iterator(make_function_object(selector), boost::begin(r)), 
             make_transform_iterator(make_function_object(selector), boost::end(r))
-        ) 
-    );
+        ); 
+    }
 
 };
 }
