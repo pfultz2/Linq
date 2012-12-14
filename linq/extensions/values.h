@@ -37,13 +37,13 @@ struct values_t
         template<class X, class T>
         struct result<X(T&)>
         {
-            typedef typename std::decay<typename T::second_type>::type& type;
+            typedef typename std::add_lvalue_reference<typename T::second_type>::type type;
         };
 
         template<class X, class T>
         struct result<X(const T&)>
         {
-            typedef typename std::add_const<typename std::decay<typename T::second_type>::type>::type& type;
+            typedef typename std::add_const<typename std::add_lvalue_reference<typename T::second_type>::type>::type type;
         };
 
         template<class T>
