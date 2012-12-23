@@ -25,54 +25,55 @@ namespace linq {
 // group_by
 //
 namespace detail {
-struct group_by_t
+
+template<class KeySelector, class ElementSelector>
+struct group_by_map_selector
 {
-    template<class KeySelector, class ElementSelector>
-    struct map_selector
+    KeySelector key_selector;
+    ElementSelector element_selector;
+
+    group_by_map_selector(KeySelector key_selector, ElementSelector element_selector)
+    : key_selector(key_selector), element_selector(element_selector)
+    {}
+
+    template<class>
+    struct result;
+
+    template<class F, class T>
+    struct result<F(T)>
     {
-        KeySelector key_selector;
-        ElementSelector element_selector;
-
-        map_selector(KeySelector key_selector, ElementSelector element_selector)
-        : key_selector(key_selector), element_selector(element_selector)
-        {}
-
-        template<class>
-        struct result;
-
-        template<class F, class T>
-        struct result<F(T)>
-        {
-            typedef std::pair<typename linq::result_of<KeySelector(T)>::type, typename linq::result_of<ElementSelector(T)>::type > type;
-        };
-
-        template<class F, class T>
-        struct result<F(T&&)>
-        : result<F(T)>
-        {};
-
-        template<class T>
-        typename result<map_selector(T&&)>::type operator()(T && x) const
-        {
-            return typename result_of<map_selector(T&&)>::type(key_selector(x), element_selector(x));
-        }
+        typedef std::pair<typename linq::result_of<KeySelector(T)>::type, typename linq::result_of<ElementSelector(T)>::type > type;
     };
 
-    template<class KeySelector, class ElementSelector>
-    static map_selector < KeySelector, ElementSelector >
-    make_map_selector (KeySelector && key_selector, ElementSelector && element_selector)
-    {
-        return map_selector < KeySelector, ElementSelector >
-        (std::forward<KeySelector>(key_selector), std::forward<ElementSelector>(element_selector));
-    }
+    template<class F, class T>
+    struct result<F(T&&)>
+    : result<F(T)>
+    {};
 
+    template<class T>
+    typename result<group_by_map_selector(T&&)>::type operator()(T && x) const
+    {
+        return typename result<group_by_map_selector(T&&)>::type(key_selector(x), element_selector(x));
+    }
+};
+
+template<class KeySelector, class ElementSelector>
+group_by_map_selector < KeySelector, ElementSelector >
+make_group_by_map_selector (KeySelector && key_selector, ElementSelector && element_selector)
+{
+    return group_by_map_selector < KeySelector, ElementSelector >
+    (std::forward<KeySelector>(key_selector), std::forward<ElementSelector>(element_selector));
+}
+
+struct group_by_t
+{
     template<class>
     struct result;
 
     template<class F, class Range, class KeySelector, class ElementSelector>
     struct result<F(Range, KeySelector, ElementSelector)>
     {
-        typedef typename as_unordered_map<typename result_of<detail::select_t(Range, map_selector<KeySelector, ElementSelector>)>::type >::type type;
+        typedef typename as_unordered_map<typename result_of<detail::select_t(Range, group_by_map_selector<KeySelector, ElementSelector>)>::type >::type type;
     };
 
     template<class F, class Range, class KeySelector, class ElementSelector>
@@ -88,7 +89,7 @@ struct group_by_t
     template<class Range, class KeySelector>
     auto operator()(Range && r, KeySelector ks) const LINQ_RETURNS
     (
-        make_map( r | linq::select(make_map_selector(ks, identity_selector())) )
+        make_map( r | linq::select(make_group_by_map_selector(ks, identity_selector())) )
     );
 
     // TODO: Custom comparer overloads can't be supported right now, 
@@ -98,7 +99,7 @@ struct group_by_t
     template<class Range, class KeySelector, class ElementSelector>
     auto operator()(Range && r, KeySelector ks, ElementSelector es) const LINQ_RETURNS
     (
-        make_map( r | linq::select(make_map_selector(ks, es)) )
+        make_map( r | linq::select(make_group_by_map_selector(ks, es)) )
     );
 
 };

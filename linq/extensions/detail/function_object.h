@@ -9,6 +9,7 @@
 #define LINQ_GUARD_DETAIL_FUNCTION_OBJECT_H
 
 #include <linq/utility.h>
+#include <linq/extensions/detail/result_of.h>
 #include <boost/optional.hpp>
 #include <utility>
 
@@ -26,6 +27,12 @@ struct unwrap<std::reference_wrapper<T> >
 {
     typedef T& type;
 };
+template<class T>
+struct lazy_unwrap
+{
+    typedef typename unwrap<typename T::type>::type type;
+};
+
 }
 
 // Lambdas aren't very nice, so we use this wrapper to make them play nicer. This
@@ -59,19 +66,20 @@ struct function_object
 
     template<class F>
     struct result
+    : detail::lazy_unwrap<linq::result_of<F> >
     {};
 
-    template<class F, class T>
-    struct result<F(T)>
-    {
-        typedef typename detail::unwrap<decltype(linq::declval<F>()(linq::declval<T>()))>::type type;
-    };
+    // template<class F, class T>
+    // struct result<F(T)>
+    // {
+    //     typedef typename detail::unwrap<decltype(linq::declval<F>()(linq::declval<T>()))>::type type;
+    // };
 
-    template<class F, class T, class U>
-    struct result<F(T, U)>
-    {
-        typedef typename detail::unwrap<decltype(linq::declval<F>()(linq::declval<T>(), linq::declval<U>()))>::type type;
-    };
+    // template<class F, class T, class U>
+    // struct result<F(T, U)>
+    // {
+    //     typedef typename detail::unwrap<decltype(linq::declval<F>()(linq::declval<T>(), linq::declval<U>()))>::type type;
+    // };
 
     template<class T>
     typename result<const Fun(T)>::type operator()(T && x) const 
