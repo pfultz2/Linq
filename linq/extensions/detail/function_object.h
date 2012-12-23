@@ -44,6 +44,8 @@ struct function_object
 {
     boost::optional<Fun> f;
 
+    typedef Fun function_type;
+
     function_object()
     {}
     function_object(Fun f): f(f)
@@ -65,21 +67,17 @@ struct function_object
     }
 
     template<class F>
-    struct result
-    : detail::lazy_unwrap<linq::result_of<F> >
+    struct result;
+
+    template<class F, class T>
+    struct result<F(T)>
+    : detail::lazy_unwrap<linq::result_of<Fun(T)> >
     {};
 
-    // template<class F, class T>
-    // struct result<F(T)>
-    // {
-    //     typedef typename detail::unwrap<decltype(linq::declval<F>()(linq::declval<T>()))>::type type;
-    // };
-
-    // template<class F, class T, class U>
-    // struct result<F(T, U)>
-    // {
-    //     typedef typename detail::unwrap<decltype(linq::declval<F>()(linq::declval<T>(), linq::declval<U>()))>::type type;
-    // };
+    template<class F, class T, class U>
+    struct result<F(T, U)>
+    : detail::lazy_unwrap<linq::result_of<Fun(T, U)> >
+    {};
 
     template<class T>
     typename result<const Fun(T)>::type operator()(T && x) const 

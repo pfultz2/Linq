@@ -25,9 +25,14 @@ struct defer : F
     {}
 
     template<class X>
-    struct result
-    : linq::result_of<X>
-    {};
+    struct result;
+
+#define LINQ_DEFER_EACH(z, n, data) \
+    template<class X BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS_Z(z, n, class T)> \
+    struct result<X(BOOST_PP_ENUM_PARAMS_Z(z, n, T))> \
+    : linq::result_of<F(BOOST_PP_ENUM_PARAMS_Z(z, n, T)) > \
+    {};  
+BOOST_PP_REPEAT_1(LINQ_DEFER_LIMIT, LINQ_DEFER_EACH, ~)
 
 };
 
