@@ -26,12 +26,12 @@ struct first_or_default_t
 
     template<class X, class Range>
     struct result<X(Range)>
-    : linq::result_of<first_t(Range)>
+    : boost::range_value<typename boost::decay<Range>::type>
     {};
 
     template<class X, class Range, class Predicate>
     struct result<X(Range, Predicate)>
-    : linq::result_of<first_t(Range)>
+    : boost::range_value<typename boost::decay<Range>::type>
     {};
     
     template<class Range>
