@@ -104,6 +104,22 @@ make_join_outer_selector (Lookup inner_lookup, OuterKeySelector os, ResultKeySel
 // with the correct type and display an error
 struct group_join_t
 {
+    template<class>
+    struct result;
+
+    template<class X, class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>
+    struct result<X(Outer, Inner, OuterKeySelector, InnerKeySelector, ResultSelector) >
+    : linq::result_of<select_t
+    (
+        Outer,
+        join_outer_selector
+        <
+            typename as_shared_map<typename result_of<select_t(Inner, join_inner_selector<typename boost::decay<InnerKeySelector>::type>)>::type>::type,
+            typename boost::decay<OuterKeySelector>::type,
+            typename boost::decay<ResultSelector>::type
+        >
+    )>
+    {};
     template<class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>
     auto operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector result_selector) const LINQ_RETURNS
     (

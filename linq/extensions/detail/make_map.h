@@ -25,6 +25,12 @@ struct as_unordered_map
     typedef boost::unordered_multimap<typename value_type::first_type, typename value_type::second_type> type;
 };
 
+template<class R>
+struct as_shared_map
+{
+    typedef std::shared_ptr<typename as_unordered_map<R>::type> type;
+};
+
 template<class R, class Compare>
 struct as_map
 {
