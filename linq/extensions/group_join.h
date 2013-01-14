@@ -84,6 +84,22 @@ struct join_outer_selector
     : inner_lookup(inner_lookup), os(os), rs(rs)
     {}
 
+    template<class>
+    struct result;
+
+    template<class X, class T>
+    struct result<X(T)>
+    : linq::result_of<ResultKeySelector
+    (
+        T, 
+        typename linq::result_of<select_t
+        (
+            std::pair<typename Lookup::element_type::iterator, typename Lookup::element_type::iterator>, 
+            join_value_selector<Lookup>
+        )>::type
+    )>
+    {};
+
     template<class T>
     auto operator()(T && x) const 
     -> decltype(declval<const ResultKeySelector>()(std::forward<T>(x), declval<const Lookup>()->equal_range(declval<const OuterKeySelector>()(std::forward<T>(x))) | linq::select(make_join_value_selector(declval<const Lookup>()))))
