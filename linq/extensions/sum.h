@@ -35,7 +35,10 @@ struct sum_t
     {};
 
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS(r | linq::aggregate(defer<sum_reducer>()));
+    typename result<sum_t(Range&&)>::type operator()(Range && r) const
+    {
+        return (r | linq::aggregate(defer<sum_reducer>()));
+    }
 };
 }
 namespace {
