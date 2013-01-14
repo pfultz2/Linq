@@ -26,6 +26,14 @@ struct sum_reducer
 
 struct sum_t
 {
+    template<class>
+    struct result;
+
+    template<class X, class Range>
+    struct result<X(Range)>
+    : linq::result_of<aggregate_t(Range, defer<sum_reducer>)>
+    {};
+
     template<class Range>
     auto operator()(Range && r) const LINQ_RETURNS(r | linq::aggregate(defer<sum_reducer>()));
 };
