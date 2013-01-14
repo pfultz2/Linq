@@ -54,6 +54,14 @@ struct keys_t
         }
     };
 
+    template<class>
+    struct result;
+
+    template<class X, class Range>
+    struct result<X(Range)>
+    : linq::result_of<select_t(Range, key_selector)>
+    {};
+
     template<class Range>
     auto operator()(Range && r) const LINQ_RETURNS(r | linq::select(key_selector()));
 
