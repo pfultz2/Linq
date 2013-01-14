@@ -21,6 +21,19 @@ namespace linq {
 namespace detail {
 struct first_or_default_t
 {
+    template<class>
+    struct result;
+
+    template<class X, class Range>
+    struct result<X(Range)>
+    : linq::result_of<first_t(Range)>
+    {};
+
+    template<class X, class Range, class Predicate>
+    struct result<X(Range, Predicate)>
+    : linq::result_of<first_t(Range)>
+    {};
+    
     template<class Range>
     auto operator()(Range && r) const LINQ_RETURNS
     (r | linq::first(always(), typename boost::range_value<typename boost::decay<Range>::type>::type()));
