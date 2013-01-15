@@ -62,7 +62,10 @@ struct values_t
     {};
 
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS(r | linq::select(value_selector()));
+    typename result<values_t(Range&&)>::type operator()(Range && r) const
+    {
+        return r | linq::select(value_selector());
+    };
 };
 }
 namespace {

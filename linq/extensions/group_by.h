@@ -87,20 +87,20 @@ struct group_by_t
     {};
 
     template<class Range, class KeySelector>
-    auto operator()(Range && r, KeySelector ks) const LINQ_RETURNS
-    (
-        make_map( r | linq::select(make_group_by_map_selector(ks, identity_selector())) )
-    );
+    typename result<group_by_t(Range&&, KeySelector)>::type operator()(Range && r, KeySelector ks) const
+    {
+        return make_map( r | linq::select(make_group_by_map_selector(ks, identity_selector())) );
+    };
 
     // TODO: Custom comparer overloads can't be supported right now, 
     // because we can't detect the difference between a comparer and 
     // a selector in msvc
 
     template<class Range, class KeySelector, class ElementSelector>
-    auto operator()(Range && r, KeySelector ks, ElementSelector es) const LINQ_RETURNS
-    (
-        make_map( r | linq::select(make_group_by_map_selector(ks, es)) )
-    );
+    typename result<group_by_t(Range&&, KeySelector, ElementSelector)>::type operator()(Range && r, KeySelector ks, ElementSelector es) const
+    {
+        return make_map( r | linq::select(make_group_by_map_selector(ks, es)) );
+    };
 
 };
 }

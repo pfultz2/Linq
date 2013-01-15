@@ -137,9 +137,10 @@ struct group_join_t
     )>
     {};
     template<class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>
-    auto operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector result_selector) const LINQ_RETURNS
-    (
-        outer | linq::select
+    typename result<group_join_t(Outer&&, Inner&&, OuterKeySelector, InnerKeySelector, ResultSelector)>::type 
+    operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector result_selector) const
+    {
+        return outer | linq::select
         (
             make_join_outer_selector
             (
@@ -147,8 +148,8 @@ struct group_join_t
                 outer_key_selector, 
                 result_selector
             )
-        )
-    );
+        );
+    };
 };
 }
 namespace {
