@@ -114,8 +114,21 @@ auto bind_range(Range && r, Selector s) LINQ_RETURNS
 namespace detail {
 struct select_many_t
 {
+    template<class>
+    struct result;
+
+    template<class F, class Range, class Selector>
+    struct result<F(Range, Selector)>
+    {
+        typedef typename boost::range_iterator<typename std::decay<Range>::type>::type iterator;
+        typedef function_object<typename std::decay<Selector>::type> fun;
+        typedef boost::iterator_range<bind_iterator<iterator,  fun> > type;
+    };
     template<class Range, class Selector>
-    auto operator()(Range && r, Selector s) const LINQ_RETURNS(linq::bind_range(std::forward<Range>(r), make_function_object(s)));
+    typename result<select_many_t(Range&&, Selector)>::type operator()(Range && r, Selector s) const
+    {
+        return linq::bind_range(std::forward<Range>(r), make_function_object(s));
+    };
 };
 }
 namespace {
