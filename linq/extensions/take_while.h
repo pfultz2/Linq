@@ -20,7 +20,7 @@ struct take_while_t
 {
     template<class Range, class Predicate>
     auto operator()(Range && r, Predicate p) const
-    LINQ_RETURNS(boost::make_iterator_range(boost::begin(r), boost::find_if(r, std::bind(not_predicate(), p, _1))));
+    LINQ_RETURNS(boost::make_iterator_range(boost::begin(r), boost::find_if(r, std::bind(not_predicate(), p, linq::_1))));
 };
 }
 namespace {
