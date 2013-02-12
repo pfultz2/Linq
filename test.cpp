@@ -109,7 +109,7 @@ struct name_selector
     auto operator()(T && x) const LINQ_RETURNS
     (x.name);
 };
-
+#ifndef _MSC_VER
 BOOST_AUTO_TEST_CASE( query_group_by_test )
 {
     std::vector<person> v = list_of
@@ -157,14 +157,14 @@ BOOST_AUTO_TEST_CASE( query_select_many_test )
     auto q = LINQ(from(s, students) from(g, s.grades) select(g));
     CHECK_SEQ(r, q);
 }
-
+#endif
 BOOST_AUTO_TEST_CASE( query_select_test )
 {
     std::vector<int> v = list_of(1)(2)(3)(4);
     std::vector<int> r = list_of(3)(6)(9)(12);
     CHECK_SEQ(r, LINQ(from(i, v) select(i * 3)));
 }
-
+#ifndef _MSC_VER
 BOOST_AUTO_TEST_CASE( query_then_by_test )
 {
     std::vector<person> people = list_of
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE( query_then_by_test )
     CHECK_SEQ(people_name, LINQ(from(p, people) orderby(ascending p.age, ascending p.name) select(p.name)));
     CHECK_SEQ(people_name_d, LINQ(from(p, people) orderby(p.age, descending p.name) select(p.name)));
 }
-
+#endif
 BOOST_AUTO_TEST_CASE( query_where_test )
 {
     std::vector<int> v = list_of(1)(3)(4)(5);
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE( count_test )
     std::vector<int> v = list_of(1)(2)(3)(4);
     BOOST_CHECK_EQUAL(2, v | linq::count(odd()));
 }
-
+#ifndef _MSC_VER
 BOOST_AUTO_TEST_CASE( default_if_empty_test )
 {
     std::vector<int> non_empty = list_of(1)(2);
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE( default_if_empty_test )
     BOOST_CHECK(non_empty | linq::default_if_empty(5) | linq::sequence_equal(non_empty));
     BOOST_CHECK(empty | linq::default_if_empty(5) | linq::sequence_equal(default_empty));
 }
-
+#endif
 BOOST_AUTO_TEST_CASE( distinct_test )
 {
     std::vector<int> v = list_of(1)(2)(2)(3)(2)(4)(5)(5);
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE( first_or_default_test )
     BOOST_CHECK_EQUAL(3, v | linq::first_or_default(odd()));
     BOOST_CHECK_EQUAL(0, v | linq::first_or_default([](int x) { return x > 5; }));
 }
-
+#ifndef _MSC_VER
 BOOST_AUTO_TEST_CASE( group_by_test )
 {
     std::vector<person> v = list_of
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE( group_by_test )
 
 
 }
-
+#endif
 struct group_join_select
 {
     template<class Person, class Pets>
@@ -344,7 +344,7 @@ struct group_join_select
     );
 
 };
-
+#ifndef _MSC_VER
 BOOST_AUTO_TEST_CASE( group_join_test )
 {
     std::vector<person> people = list_of
@@ -433,7 +433,7 @@ BOOST_AUTO_TEST_CASE( join_test )
         (r2 | linq::sequence_equal(q))
     );
 }
-
+#endif
 BOOST_AUTO_TEST_CASE( intersect_test )
 {
     std::vector<int> v1 = list_of(1)(2)(3)(4)(5);
@@ -478,7 +478,7 @@ BOOST_AUTO_TEST_CASE( min_test )
     std::vector<int> v = list_of(2)(3)(8)(1)(4);
     BOOST_CHECK_EQUAL(1, v | linq::min);
 }
-
+#ifndef _MSC_VER
 BOOST_AUTO_TEST_CASE( order_by_test )
 {
     std::vector<person> people = list_of
@@ -494,14 +494,14 @@ BOOST_AUTO_TEST_CASE( order_by_test )
     CHECK_SEQ(people_age, people | linq::order_by(age_select) | linq::select(age_select));
     CHECK_SEQ(people_age | linq::reverse, people | linq::order_by_descending(age_select) | linq::select(age_select));
 }
-
+#endif
 BOOST_AUTO_TEST_CASE( reverse_test )
 {
     std::vector<int> v1 = list_of(3)(2)(1);
     std::vector<int> v2 = list_of(1)(2)(3);
     BOOST_CHECK(v1 | linq::reverse | linq::sequence_equal(v2));
 }
-
+#ifndef _MSC_VER
 BOOST_AUTO_TEST_CASE( select_many_test )
 {
     std::vector<student> students = list_of
@@ -514,7 +514,7 @@ BOOST_AUTO_TEST_CASE( select_many_test )
     CHECK_SEQ(r, students | linq::select_many([](student& s) { return std::ref(s.grades); }));
     CHECK_SEQ(r, students | linq::select_many([](student& s) { return s.grades | linq::select([](int& g){ return std::ref(g); }); }));
 }
-
+#endif
 BOOST_AUTO_TEST_CASE( select_test )
 {
     std::vector<int> v = list_of(1)(2)(3)(4);
@@ -569,7 +569,7 @@ BOOST_AUTO_TEST_CASE( take_while_test )
     std::vector<int> r = list_of(1)(3);
     BOOST_CHECK(v | linq::take_while(odd()) | linq::sequence_equal(r));
 }
-
+#ifndef _MSC_VER
 BOOST_AUTO_TEST_CASE( then_by_test )
 {
     std::vector<person> people = list_of
@@ -587,7 +587,7 @@ BOOST_AUTO_TEST_CASE( then_by_test )
     CHECK_SEQ(people_name, people | linq::order_by(age_select) | linq::then_by(name_select) | linq::select(name_select));
     CHECK_SEQ(people_name_d, people | linq::order_by(age_select) | linq::then_by_descending(name_select) | linq::select(name_select));
 }
-
+#endif
 BOOST_AUTO_TEST_CASE( to_container_test )
 {
     std::vector<int> v = list_of(1)(2)(3)(4);
