@@ -33,7 +33,8 @@ struct single_t
     template<class Range>
     typename result<single_t(Range&&)>::type operator()(Range && r) const
     {
-        return is_single(r) ? *boost::begin(r) : throw single_throw();
+        if (is_single(r)) return *boost::begin(r);
+        throw single_throw();
     };
 };
 }
