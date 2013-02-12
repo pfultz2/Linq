@@ -26,9 +26,19 @@ struct min_reducer
 
 struct min_t
 {
+    template<class>
+    struct result;
+
+    template<class X, class Range>
+    struct result<X(Range)>
+    : linq::result_of<aggregate_t(Range, defer<min_reducer>)>
+    {};
+
     template<class Range>
-    auto operator()(Range && r) const
-    LINQ_RETURNS(r | linq::aggregate(defer<min_reducer>()));
+    typename result<min_t(Range&&)>::type operator()(Range && r) const
+    {
+        return r | linq::aggregate(defer<min_reducer>());
+    };
 };
 }
 namespace {

@@ -17,11 +17,30 @@ namespace linq {
 namespace detail {
 struct last_or_default_t
 {
+	template<class>
+    struct result;
+
+    template<class X, class Range>
+    struct result<X(Range)>
+    : boost::range_value<typename boost::decay<Range>::type>
+    {};
+
+    template<class X, class Range, class Predicate>
+    struct result<X(Range, Predicate)>
+    : boost::range_value<typename boost::decay<Range>::type>
+    {};
+
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS(r | linq::last(always(), typename boost::range_value<typename boost::decay<Range>::type>::type()));
+    typename result<last_or_default_t(Range&&)>::type operator()(Range && r) const 
+    {
+    	return r | linq::last(always(), typename boost::range_value<typename boost::decay<Range>::type>::type());
+    };
 
     template<class Range, class Predicate>
-    auto operator()(Range && r, Predicate p) const LINQ_RETURNS(r | linq::last(p, typename boost::range_value<typename boost::decay<Range>::type>::type()));
+    typename result<last_or_default_t(Range&&, Predicate)>::type operator()(Range && r, Predicate p) const
+    {
+    	return r | linq::last(p, typename boost::range_value<typename boost::decay<Range>::type>::type());
+    };
 };
 }
 namespace {

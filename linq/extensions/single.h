@@ -22,11 +22,19 @@ struct single_t
         return std::out_of_range("Is not a single range");
     }
 
+    template<class>
+    struct result;
+
+    template<class F, class Range>
+    struct result<F(Range)>
+    : boost::range_reference<typename std::decay<Range>::type>
+    {};
+
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS
-    (
-        is_single(r) ? *boost::begin(r) : throw single_throw()
-    );
+    typename result<single_t(Range&&)>::type operator()(Range && r) const
+    {
+        return is_single(r) ? *boost::begin(r) : throw single_throw();
+    };
 };
 }
 namespace {

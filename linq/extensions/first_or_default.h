@@ -35,12 +35,16 @@ struct first_or_default_t
     {};
     
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS
-    (r | linq::first(always(), typename boost::range_value<typename boost::decay<Range>::type>::type()));
+    typename result<first_or_default_t(Range&&)>::type operator()(Range && r) const
+    {
+        return r | linq::first(always(), typename boost::range_value<typename boost::decay<Range>::type>::type());
+    };
 
     template<class Range, class Predicate>
-    auto operator()(Range && r, Predicate p) const LINQ_RETURNS
-    (r | linq::first(p, typename boost::range_value<typename boost::decay<Range>::type>::type()));
+    typename result<first_or_default_t(Range&&, Predicate)>::type operator()(Range && r, Predicate p) const
+    {
+        return r | linq::first(p, typename boost::range_value<typename boost::decay<Range>::type>::type());
+    };
 };
 }
 namespace {

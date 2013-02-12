@@ -27,12 +27,30 @@ struct first_t
         else return *it;
     }
 
+    template<class>
+    struct result;
+
+    template<class F, class Range, class Predicate, class Value>
+    struct result<F(Range, Predicate, Value)>
+    : boost::range_value<typename std::decay<Range>::type>
+    {};
+
+    template<class F, class Range>
+    struct result<F(Range)>
+    : boost::range_reference<typename std::decay<Range>::type>
+    {};
+
     template<class Range, class Predicate, class Value>
-    auto operator()(Range && r, Predicate p, Value && v) const LINQ_RETURNS
-    (first_it(boost::begin(r), boost::end(r), p, std::forward<Value>(v)));
+    typename result<first_t(Range&&, Predicate, Value&&)>::type operator()(Range && r, Predicate p, Value && v) const
+    {
+        return first_it(boost::begin(r), boost::end(r), p, std::forward<Value>(v));
+    };
 
     template<class Range>
-    auto operator()(Range && r) const LINQ_RETURNS(*(boost::begin(r)));
+    typename result<first_t(Range&&)>::type operator()(Range && r) const 
+    {
+        return *(boost::begin(r));
+    };
 
 };
 }

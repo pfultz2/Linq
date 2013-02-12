@@ -26,9 +26,19 @@ struct max_reducer
 
 struct max_t
 {
+    template<class>
+    struct result;
+
+    template<class X, class Range>
+    struct result<X(Range)>
+    : linq::result_of<aggregate_t(Range, defer<max_reducer>)>
+    {};
+
     template<class Range>
-    auto operator()(Range && r) const
-    LINQ_RETURNS(r | linq::aggregate(defer<max_reducer>()));
+    typename result<max_t(Range&&)>::type operator()(Range && r) const
+    {
+        return r | linq::aggregate(defer<max_reducer>());
+    };
 };
 }
 namespace {

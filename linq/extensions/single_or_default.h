@@ -16,11 +16,19 @@ namespace linq {
 namespace detail {
 struct single_or_default_t
 {
+	template<class>
+    struct result;
+
+    template<class F, class Range, class T>
+    struct result<F(Range, T)>
+    : boost::range_value<typename std::decay<Range>::type>
+    {};
+
     template<class Range, class T>
-    auto operator()(Range && r, T && x) const LINQ_RETURNS
-    (
-        is_single(r) ? *boost::begin(r) : x
-    );
+    typename result<single_or_default_t(Range&&, T&&)>::type operator()(Range && r, T && x) const
+    {
+        return is_single(r) ? *boost::begin(r) : x;
+    };
 };
 }
 namespace {
