@@ -222,6 +222,11 @@ std::vector<person> people =
 auto q = LINQ(from(p, people) group(p.age, p.name));
 ```
 
+Installation
+------------
+
+Just copy the `linq.h` and `linq` folder to the include directory for your compiler. Then just include the `linq.h` header. The `linq/extensions.h` header will just include whats needed for the extension methods, without the query syntax, and the `linq/query.h` will include the query syntax as well.
+
 Requirements
 ------------
 
