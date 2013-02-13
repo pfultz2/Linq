@@ -59,7 +59,7 @@ The extension methods supported are:
 *   any(predicate)
 *   average()
 *   concat(range)
-*   containe(element)
+*   contains(element)
 *   count()
 *   count(predicat)
 *   default_if_empty()
