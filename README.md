@@ -225,7 +225,7 @@ auto q = LINQ(from(p, people) group(p.age, p.name));
 Requirements
 ------------
 
-For full support it requires clang or gcc, and boost. There is partial support for visual studio. Visual studio doesn't support the `default_if_empty`, `group_by`, `group_join`, `join`, `order_by`, `select_many`, and `then_by` extensions, and it doesn't support `orderby`, `group`, and nested from clauses. Perhaps some visuat studio wizards could help find workarounds with their bugs.  
+For full support it requires clang or gcc, and boost. There is partial support for visual studio. Visual studio doesn't support the `default_if_empty`, `group_by`, `group_join`, `join`, `order_by`, `select_many`, and `then_by` extensions, and it doesn't support `orderby`, `group`, and nested from clauses. Perhaps some visual studio wizards could help find workarounds for msvc bugs.  
 
 
 Limitations
