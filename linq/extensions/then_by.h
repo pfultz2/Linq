@@ -32,7 +32,7 @@ struct then_by_t
 {
     template<class Range, class Selector>
     auto operator()(Range&& r, Selector s) const LINQ_RETURNS
-    (make_ordered_range(boost::begin(r), boost::end(r), std::bind(defer<then_selector>(), s, r.c, linq::_1, linq::_2)));
+    (make_ordered_range(r.first, r.last, std::bind(defer<then_selector>(), s, r.c, linq::_1, linq::_2)));
 };
 }
 namespace {
