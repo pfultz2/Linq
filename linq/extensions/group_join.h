@@ -101,8 +101,9 @@ struct join_outer_selector
     {};
 
     template<class T>
-    auto operator()(T && x) const 
-    -> decltype(declval<const ResultKeySelector>()(std::forward<T>(x), declval<const Lookup>()->equal_range(declval<const OuterKeySelector>()(std::forward<T>(x))) | linq::select(make_join_value_selector(declval<const Lookup>()))))
+    typename result<join_outer_selector(T&&)>::type
+    operator()(T && x) const 
+    // -> decltype(declval<const ResultKeySelector>()(std::forward<T>(x), declval<const Lookup>()->equal_range(declval<const OuterKeySelector>()(std::forward<T>(x))) | linq::select(make_join_value_selector(declval<const Lookup>()))))
     {
         return rs(std::forward<T>(x), inner_lookup->equal_range(os(std::forward<T>(x))) | linq::select(make_join_value_selector(inner_lookup)));
     };

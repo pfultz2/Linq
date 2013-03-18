@@ -57,8 +57,18 @@ struct join_t
         : rs(rs)
         {}
 
+        template<class>
+        struct result;
+
+        template<class X, class Key, class Value>
+        struct result<X(Key, Value)>
+        {
+            typedef decltype(declval<Value>() | linq::select(make_apply_result_selector(declval<const ResultSelector>(), declval<Key>()))) type;
+        };
+
         template<class Key, class Value>
-        auto operator()(Key && k, Value && v) const -> decltype(v | linq::select(make_apply_result_selector(declval<const ResultSelector>(), k)))
+        typename result<result_selector(Key&&, Value&&)>::type
+        operator()(Key && k, Value && v) const // -> decltype(v | linq::select(make_apply_result_selector(declval<const ResultSelector>(), k)))
         {
             return v | linq::select(make_apply_result_selector(rs, k));
         };
@@ -71,13 +81,33 @@ struct join_t
         return result_selector < function_object<ResultSelector> >
         (make_function_object(rs));
     }
+
+    template<class>
+    struct result;
+
+    template<class X, class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>
+    struct result<X(Outer, Inner, OuterKeySelector, InnerKeySelector, ResultSelector)>
+    {
+        static Outer && outer;
+        static Inner && inner;
+        static OuterKeySelector&& outer_key_selector;
+        static InnerKeySelector&& inner_key_selector;
+        static ResultSelector&& rs;
+
+        typedef decltype
+        (
+            outer | linq::group_join(std::forward<Inner>(inner), outer_key_selector, inner_key_selector, make_result_selector(rs))
+            | linq::select_many(linq::detail::identity_selector())
+        ) type;
+    };
     
     template<class Outer, class Inner, class OuterKeySelector, class InnerKeySelector, class ResultSelector>
-    auto operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector rs) const LINQ_RETURNS
-    (
-        outer | linq::group_join(std::forward<Inner>(inner), outer_key_selector, inner_key_selector, make_result_selector(rs))
-        | linq::select_many(linq::detail::identity_selector())
-    );
+    typename result<join_t(Outer&&, Inner&&, OuterKeySelector, InnerKeySelector, ResultSelector)>::type
+    operator()(Outer && outer, Inner && inner, OuterKeySelector outer_key_selector, InnerKeySelector inner_key_selector, ResultSelector rs) const
+    {
+        return outer | linq::group_join(std::forward<Inner>(inner), outer_key_selector, inner_key_selector, make_result_selector(rs))
+        | linq::select_many(linq::detail::identity_selector());
+    }
 };
 }
 namespace {
