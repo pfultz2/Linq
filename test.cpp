@@ -248,6 +248,13 @@ BOOST_AUTO_TEST_CASE( contains_test )
     BOOST_CHECK(v | linq::contains(3));
 }
 
+BOOST_AUTO_TEST_CASE( contains_string_test )
+{
+    std::string s = "Hello World!";
+    BOOST_CHECK(s | linq::contains("World"));
+    BOOST_CHECK(!(s | linq::contains("foo")));
+}
+
 BOOST_AUTO_TEST_CASE( count_test )
 {
     std::vector<int> v = list_of(1)(2)(3)(4);
