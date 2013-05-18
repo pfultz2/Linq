@@ -21,11 +21,10 @@ namespace linq {
 namespace detail {
 struct count_t
 {
-    // TODO: add overload for random access ranges
     template<class Range>
     long operator()(Range && r) const
     {
-        return std::count_if(boost::begin(r), boost::end(r), detail::always());
+        return std::distance(boost::begin(r), boost::end(r));
     }
 
     template<class Range, class Pred>
