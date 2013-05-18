@@ -20,25 +20,26 @@ struct last_t
 	template<class>
     struct result;
 
-    template<class F, class Range, class Predicate, class Value>
-    struct result<F(Range, Predicate, Value)>
-    : boost::range_value<typename std::decay<Range>::type>
-    {};
-
     template<class F, class Range>
     struct result<F(Range)>
     : boost::range_reference<typename std::decay<Range>::type>
     {};
 
-    template<class Range, class Predicate, class Value>
-    typename result<last_t(Range&&, Predicate, Value&&)>::type operator()(Range && r, Predicate p, Value && v) const
+    template<class F, class Range, class Predicate>
+    struct result<F(Range, Predicate)>
+    : boost::range_reference<typename std::decay<Range>::type>
+    {};
+
+    template<class Range, class Predicate>
+    typename result<last_t(Range&&, Predicate)>::type operator()(Range && r, Predicate p) const
     {
-    	return r | linq::reverse | linq::first(p, std::forward<Value>(v));
+    	return r | linq::reverse | linq::first(p);
     };
 
     template<class Range>
     typename result<last_t(Range&&)>::type operator()(Range && r) const
     {
+        if (boost::empty(r)) throw std::out_of_range("linq::last failed");
     	return *(--boost::end(r));
     };
 };

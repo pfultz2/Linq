@@ -300,8 +300,8 @@ BOOST_AUTO_TEST_CASE( first_test )
 {
     std::vector<int> v = list_of(2)(3)(4)(5);
     BOOST_CHECK_EQUAL(2, v | linq::first);
-    BOOST_CHECK_EQUAL(3, v | linq::first(odd(), 0));
-    BOOST_CHECK_EQUAL(0, v | linq::first([](int x) { return x > 5; } , 0));
+    BOOST_CHECK_EQUAL(3, v | linq::first(odd()));
+    // BOOST_CHECK_EQUAL(0, v | linq::first([](int x) { return x > 5; }));
 }
 
 BOOST_AUTO_TEST_CASE( first_or_default_test )
@@ -453,8 +453,8 @@ BOOST_AUTO_TEST_CASE( last_test )
 {
     std::vector<int> v = list_of(2)(3)(4)(5)(6);
     BOOST_CHECK_EQUAL(6, v | linq::last);
-    BOOST_CHECK_EQUAL(5, v | linq::last(odd(), 0));
-    BOOST_CHECK_EQUAL(0, v | linq::last([](int x) { return x > 6; } , 0));
+    BOOST_CHECK_EQUAL(5, v | linq::last(odd()));
+    // BOOST_CHECK_EQUAL(0, v | linq::last([](int x) { return x > 6; }));
 }
 
 BOOST_AUTO_TEST_CASE( last_or_default_test )

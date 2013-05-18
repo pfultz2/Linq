@@ -19,36 +19,31 @@ namespace linq {
 namespace detail {
 struct first_t
 {
-    template<class Iterator, class Predicate, class Value>
-    static typename boost::iterator_value<Iterator>::type first_it(Iterator first, Iterator last, Predicate p, Value && v)
-    {
-        auto it = std::find_if(first, last, p);
-        if (it == last) return v;
-        else return *it;
-    }
-
     template<class>
     struct result;
-
-    template<class F, class Range, class Predicate, class Value>
-    struct result<F(Range, Predicate, Value)>
-    : boost::range_value<typename std::decay<Range>::type>
-    {};
 
     template<class F, class Range>
     struct result<F(Range)>
     : boost::range_reference<typename std::decay<Range>::type>
     {};
 
-    template<class Range, class Predicate, class Value>
-    typename result<first_t(Range&&, Predicate, Value&&)>::type operator()(Range && r, Predicate p, Value && v) const
+    template<class F, class Range, class Predicate>
+    struct result<F(Range, Predicate)>
+    : boost::range_reference<typename std::decay<Range>::type>
+    {};
+
+    template<class Range, class Predicate>
+    typename result<first_t(Range&&, Predicate)>::type operator()(Range && r, Predicate p) const
     {
-        return first_it(boost::begin(r), boost::end(r), p, std::forward<Value>(v));
+        auto it = std::find_if(boost::begin(r), boost::end(r), p);
+        if (it == boost::end(r)) throw std::out_of_range("linq::first failed");
+        return *it;
     };
 
     template<class Range>
     typename result<first_t(Range&&)>::type operator()(Range && r) const 
     {
+        if (boost::empty(r)) throw std::out_of_range("linq::first failed");
         return *(boost::begin(r));
     };
 

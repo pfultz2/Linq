@@ -21,6 +21,14 @@ namespace linq {
 namespace detail {
 struct first_or_default_t
 {
+    template<class Iterator, class Predicate, class Value>
+    static typename boost::iterator_value<Iterator>::type first_it(Iterator first, Iterator last, Predicate p, Value && v)
+    {
+        auto it = std::find_if(first, last, p);
+        if (it == last) return v;
+        else return *it;
+    }
+
     template<class>
     struct result;
 
@@ -37,13 +45,13 @@ struct first_or_default_t
     template<class Range>
     typename result<first_or_default_t(Range&&)>::type operator()(Range && r) const
     {
-        return r | linq::first(always(), typename boost::range_value<typename boost::decay<Range>::type>::type());
+        return first_it(boost::begin(r), boost::end(r), always(), typename boost::range_value<typename boost::decay<Range>::type>::type());
     };
 
     template<class Range, class Predicate>
     typename result<first_or_default_t(Range&&, Predicate)>::type operator()(Range && r, Predicate p) const
     {
-        return r | linq::first(p, typename boost::range_value<typename boost::decay<Range>::type>::type());
+        return first_it(boost::begin(r), boost::end(r), p, typename boost::range_value<typename boost::decay<Range>::type>::type());
     };
 };
 }

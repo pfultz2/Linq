@@ -10,7 +10,8 @@
 
 #include <linq/extensions/extension.h>
 #include <linq/extensions/detail/always.h>
-#include <linq/extensions/last.h>
+#include <linq/extensions/first_or_default.h>
+#include <linq/extensions/reverse.h>
 #include <boost/range.hpp>
 
 namespace linq { 
@@ -33,13 +34,13 @@ struct last_or_default_t
     template<class Range>
     typename result<last_or_default_t(Range&&)>::type operator()(Range && r) const 
     {
-    	return r | linq::last(always(), typename boost::range_value<typename boost::decay<Range>::type>::type());
+        return r | linq::reverse | linq::first_or_default;
     };
 
     template<class Range, class Predicate>
     typename result<last_or_default_t(Range&&, Predicate)>::type operator()(Range && r, Predicate p) const
     {
-    	return r | linq::last(p, typename boost::range_value<typename boost::decay<Range>::type>::type());
+        return r | linq::reverse | linq::first_or_default(p);
     };
 };
 }
