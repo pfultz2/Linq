@@ -290,11 +290,11 @@ BOOST_AUTO_TEST_CASE( find_test )
     BOOST_CHECK_EQUAL(4, *(v | linq::find(4)));
 }
 
-// BOOST_AUTO_TEST_CASE( find_map_test )
-// {
-//     std::map<int, int> m = map_list_of(0, 1)(1, 2)(2, 3)(3, 4)(4, 5)(5, 6);
-//     BOOST_CHECK_EQUAL(5, (m | linq::find(4))->second);
-// }
+BOOST_AUTO_TEST_CASE( find_map_test )
+{
+    std::map<int, int> m = map_list_of(0, 1)(1, 2)(2, 3)(3, 4)(4, 5)(5, 6);
+    BOOST_CHECK_EQUAL(5, (m | linq::find(4))->second);
+}
 
 BOOST_AUTO_TEST_CASE( first_test )
 {

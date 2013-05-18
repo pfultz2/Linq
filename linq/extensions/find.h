@@ -11,36 +11,33 @@
 #include <linq/extensions/extension.h>
 #include <boost/range.hpp>
 
-// TODO: Add overload for string
-namespace linq_adl {
-template<class Range, class T>
-auto find(Range && r, T && x) LINQ_RETURNS(std::find(boost::begin(r), boost::end(r), std::forward<T>(x)));
-}
-
-namespace linq_find_impl
-{
-    using namespace linq_adl;
-    template<class Range, class T>
-    auto find_impl(Range && r, T && x) LINQ_RETURNS
-    (find(std::forward<Range>(r), std::forward<T>(x)));
-}
 
 namespace linq { 
+
+template<class R, class Enable = void>
+struct finder
+{
+    template<class Range, class T>
+    static auto call(Range && r, T && x) LINQ_RETURNS(std::find(boost::begin(r), boost::end(r), std::forward<T>(x)));
+};
+
+template<class R>
+struct finder<R, typename boost::enable_if<is_keyed_range<R> >::type>
+{
+    template<class Range, class T>
+    static auto call(Range && r, T && x) LINQ_RETURNS(r.find(std::forward<T>(x)));
+};
 
 //
 // find
 //
 namespace detail {
 
-
-
-
-//using linq_adl::find;
 struct find_t
 {
     template<class Range, class T>
     auto operator()(Range && r, T && x) const
-    LINQ_RETURNS(linq_find_impl::find_impl(std::forward<Range>(r), std::forward<T>(x)));
+    LINQ_RETURNS(finder<typename std::decay<Range>::type>::call(std::forward<Range>(r), std::forward<T>(x)));
 };
 }
 namespace {

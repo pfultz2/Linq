@@ -78,6 +78,21 @@ struct is_range<T&&>
 {};
 
 
+template<class T, class X = void>
+struct is_keyed_range 
+: boost::mpl::bool_<false>
+{};
+
+template<class Range>
+struct is_keyed_range<Range, typename linq::detail::holder
+<
+    typename Range::key_type, 
+    typename Range::value_type
+>::type >
+: is_range<Range>
+{};
+
+
 namespace detail {
 template<class T, class Enable = void>
 struct is_iterator_range
