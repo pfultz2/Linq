@@ -279,6 +279,8 @@ struct let
 LINQ_SEQ_NEST((x))
 // LINQ_NEST
 LINQ_SEQ_NEST((f)(y))
+// LINQ_NEST
+LINQ_SEQ_NEST((f)(g)(y))
 
 // LINQ_FOLD_JOIN
 // LINQ_FOLD_JOIN( ((x, xx)) (LINQ_SELECT)((x, y, x * 3)) )
