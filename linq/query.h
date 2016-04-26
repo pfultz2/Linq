@@ -271,7 +271,7 @@ struct let
 // Transforms the sequence
 #define LINQ_TRANSFORM(seq) LINQ_X(LINQ_TRANSFORM_FROM_CLAUSES(seq))
 // And finally the LINQ macro
-#define LINQ(x) LINQ_TRANSFORM(LINQ_SEQ_REMOVE_EMPTY(LINQ_TO_SEQ(x)))
+#define LINQ(x) LINQ_TRANSFORM(LINQ_TO_SEQ(x))
 
 #ifdef LINQ_TEST_QUERY
 
