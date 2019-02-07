@@ -250,3 +250,7 @@ Multiple `from` statements are implemented using nested lambdas. However, becaus
 
 Also, the `let`, and `join` clauses aren't supported yet. The `into` clause can't be supported without the help of polymorhpic lambdas.
 
+
+License
+-------
+[BSL-1.0](LICENSE)
