@@ -6,8 +6,8 @@ Linq for list comprehension in C++, provides an implementation of linq for C++. 
 ```c#
 struct student_t
 {
-    std::string last_name;
-    std::vector<int> scores;
+    std :: string last_name;
+    std :: vector<int> scores;
 };
 
 std::vector<student_t> students = 
@@ -132,8 +132,8 @@ All linq queries must start with a `from` statement. This specifies the variable
 ```c#
 struct student
 {
-    std::string name;
-    std::vector<int> grades;
+    std :: string name;
+    std :: vector<int> grades;
 
     student() {}
 
@@ -143,7 +143,7 @@ struct student
     {}
 };
 
-std::vector<student> students =
+std :: vector<student> students =
 {
     student("Bob", { 90, 100, 75 })
     student("Tom", { 92, 81, 70 })
@@ -166,7 +166,7 @@ auto q = LINQ(from(i, v) where(i % 2));
 The select clause applies a transformation to the elements. It is optional also, but should be the very last clause.
 
 ```c#
-std::vector<int> v = { 1, 2, 4 };
+std :: vector<int> v = { 1, 2, 4 };
 // { 3, 6, 24 }
 auto q = LINQ(from(x, v) select(x * 3));
 ```
@@ -176,12 +176,12 @@ The `orderby` clause lets you specify elements to order the range by. Also `asce
 ```c#
 struct person
 {
-    std::string name;
+    std :: string name;
     int age;
 
     person() {}
 
-    person(std::string name, int age)
+    person(std :: string name, int age)
     : name(name), age(age)
     {}
 };
@@ -202,12 +202,12 @@ The `group` clause groups the elements of a sequence. The first parameter is the
 ```c#
 struct person
 {
-    std::string name;
+    std :: string name;
     int age;
 
     person() {}
 
-    person(std::string name, int age)
+    person(std :: string name, int age)
     : name(name), age(age)
     {}
 };
