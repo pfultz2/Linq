@@ -1,7 +1,7 @@
-Linq
+Linq - Language  Integrated Query
 ====
 
-Linq for list comprehension in C++, provides an implementation of linq for C++. Currently it only supports C++ ranges, but it does support both the extension and query methods for linq. Here's an example:
+Linq (Language  Integrated Query) for list comprehension in C++, provides an implementation of linq for C++. Currently, It is only support C++ ranges, but it does support both the extension and query methods for linq. Here's an example:
 
 ```c#
 struct student_t
